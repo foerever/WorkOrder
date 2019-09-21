@@ -11,6 +11,8 @@ var WorkOrder = models.WorkOrder;
 var Worker = models.Worker;
 var Facility = models.Facility;
 
+var optimization = require('./optimize.js')
+
 mongoose.connect(require('./connection.js'));
 
 //run middleware
@@ -58,7 +60,7 @@ app.post('/workorder_submission', async function (req, res, next) {
     workOrder.save()
 
     // this will eventually be replaced by the optimization algorithm
-    var optimal_worker = await Worker.findOne({ name: "Anthony" })
+    var optimal_worker = await Worker.findOne({ phone_number: optimization.selectOptimalWorker(workOrder) })
     optimal_worker.queue.push(workOrder._id)
     optimal_worker.save()
 
@@ -124,22 +126,21 @@ app.post('/declined', (req, res) => {
 });
 
 // functionally a get request to retrieve information about the technician's current status
-app.post('/status', function (req, res) {
+app.post('/status', async function (req, res, next) {
     console.log("status hit");
 
     // find technician in database
-    var number = req.body.number;
+    var number = req.body.phone_number;
     console.log("number: " + number.substring(1));
-    Worker.find({
-        phone_number: number.substring(1)
-    }, (err, doc) => {
-        if (err) console.log(err);
-        else console.log(doc.name);
-    });//     .lean().exec(function(err, doc) {
-    //     console.log(doc.name);
-    //
-    // });
+    // this one is to modify the database
 
+    // this one is so u can see the contents or whatever u need to do
+    var tech_object = (await Worker.findOne({ phone_number: number.substring(1) }))[0].toObject();
+    console.log(tech_object);
+    // unfortunately to save the object we need to refetch it again for now | temporary fix
+    var tech_cursor = await Worker.findOne({ phone_number: number.substring(1) })
+    tech_cursor.traveling = true;
+    tech_cursor.save();
 
     // find technician's first work order
     // var first_work_order = tech.queue[0];
