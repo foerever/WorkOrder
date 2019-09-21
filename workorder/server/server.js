@@ -9,6 +9,7 @@ var mongoose = require('mongoose');
 var models = require('./models.js');
 var WorkOrder = models.WorkOrder;
 var Worker = models.Worker;
+var Facility = models.Facility;
 
 mongoose.connect(require('./connection.js'));
 
@@ -57,7 +58,7 @@ app.post('/workorder_submission', async function (req, res, next) {
     workOrder.save()
 
     // this will eventually be replaced by the optimization algorithm
-    var optimal_worker = await Worker.findOne({name:"Anthony"})
+    var optimal_worker = await Worker.findOne({ name: "Anthony" })
     optimal_worker.queue.push(workOrder._id)
     optimal_worker.save()
 
@@ -73,14 +74,41 @@ app.post('/worker_submission', function (req, res, next) {
         certifications: req.body.certifications,
         shift: req.body.shift,
         queue: [],
-        traveling: false
+        traveling: false,
+        hoursLeft: 0
     });
 
     workerSignUp.save()
-    console.log('saved!!');
+    // console.log('saved!!');
     // likewise, need to find a different page for this to go to
     res.status(200).send("thanks for submitting a new technician form :)")
 });
+
+app.post('/addFacilities', (req, res) => {
+    Facility.insertMany(req.body)
+        .then(doc => { res.json(doc); })
+        .catch(err => res.json(err));
+});
+
+app.get('/getFacilities', (req, res) => {
+    Facility.find({}).then(doc => res.json(doc)).catch(err => console.log(err));
+})
+
+app.post('/getFacilitiesInBox', (req, res) => {
+    const { bottomLeft, upperRight } = req.body;
+    console.log(req.body)
+    Facility.find({
+        'location': {
+            '$geoWithin': {
+                '$box': [
+                    bottomLeft,
+                    upperRight
+                ]
+            }
+        }
+    }).then(doc => res.json(doc)).
+        catch(err => console.log(err));
+})
 
 // Technician has declined the work order, remove from their queue
 app.post('/declined', (req, res) => {
@@ -96,7 +124,7 @@ app.post('/declined', (req, res) => {
 });
 
 // functionally a get request to retrieve information about the technician's current status
-app.post('/status', function(req, res) {
+app.post('/status', function (req, res) {
     console.log("status hit");
 
     // find technician in database

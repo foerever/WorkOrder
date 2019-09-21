@@ -7,6 +7,8 @@ var workOrderSchema = mongoose.Schema({
     equipment_type: String,
     priority: Number,
     facility: String,
+}, {
+    timestamps: true
 });
 
 var workerSchema = mongoose.Schema({
@@ -14,12 +16,26 @@ var workerSchema = mongoose.Schema({
     phone_number: Number,
     certifications: [String],
     shift: Boolean,
-    queue: [String],
-    traveling: Boolean
+    queue: [workOrderSchema],
+    traveling: Boolean,
+    hoursLeft: Number
 });
+
+var facilitySchema = mongoose.Schema({
+    facilityId: String,
+    location: {
+        type: { type: String },
+        coordinates: []
+    }
+});
+facilitySchema.index({ location: "2dsphere" });
+
+
+
 
 module.exports = {
     workOrderSchema: workOrderSchema,
     workerSchema: workerSchema,
+    facilitySchema
 }
 
