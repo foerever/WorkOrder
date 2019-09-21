@@ -108,7 +108,7 @@ app.post('/status', function(req, res) {
         phone_number: number.substring(1)
     }, (err, doc) => {
         if (err) console.log(err);
-        else console.log(doc.name);
+        else console.log(doc[0].toObject().name);
     });//     .lean().exec(function(err, doc) {
     //     console.log(doc.name);
     //
