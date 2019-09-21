@@ -23,4 +23,8 @@ router.post('/worker_submission', function (req, res, next) {
     console.log(req.body)
 })
 
+router.post('/status', function (req, res, next) {
+    console.log(req.body)
+})
+
 module.exports = router;

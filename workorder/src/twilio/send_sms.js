@@ -7,6 +7,6 @@ client.messages
     .create({
         body: 'ALERT: New Work Order #12345. Location: x, Time: x. Reply YES to accept, NO to decline.',
         from: '+14422640841',
-        to: '+19492957381'  // replace with user.number
+        to: '+17138288185'  // replace with user.number
     })
     .then(message => console.log(message.sid));

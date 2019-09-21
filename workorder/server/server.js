@@ -98,29 +98,28 @@ app.post('/declined', (req, res) => {
 });
 
 // functionally a get request to retrieve information about the technician's current status
-app.post('/status', function(req, res) {
+app.post('/status', async function(req, res, next) {
     console.log("status hit");
 
     // find technician in database
-    var number = req.body.number;
+    var number = req.body.phone_number;
     console.log("number: " + number.substring(1));
-    Worker.find({
-        phone_number: number.substring(1)
-    }, (err, doc) => {
-        if (err) console.log(err);
-        else console.log(doc[0].toObject().name);
-    });//     .lean().exec(function(err, doc) {
-    //     console.log(doc.name);
-    //
-    // });
-
+    // this one is to modify the database
+    
+    // this one is so u can see the contents or whatever u need to do
+    var tech_object = (await Worker.findOne({phone_number:number.substring(1)}))[0].toObject();
+    console.log(tech_object);
+    // unfortunately to save the object we need to refetch it again for now | temporary fix
+    var tech_cursor = await Worker.findOne({phone_number:number.substring(1)})
+    tech_cursor.traveling = true;
+    tech_cursor.save();
 
     // find technician's first work order
     // var first_work_order = tech.queue[0];
     // console.log("first_work_order:" + first_work_order);
     // var t = tech.traveling;
 
-    res.status(200).send({ "traveling": "yes" })
+    res.status(200).send({"traveling":"yes"})
 });
 
 // updates a technician's traveling status
