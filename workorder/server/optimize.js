@@ -63,7 +63,7 @@ const find_phone_number = async (valid_workers) => {
 
 
 module.exports = {
-    selectOptimalWorker: function () {
+    selectOptimalWorker: function (WorkOrder) {
        return 7138288185;
     }
 };

@@ -59,7 +59,7 @@ app.post('/workorder_submission', async function (req, res, next) {
     workOrder.save()
 
     // this will eventually be replaced by the optimization algorithm
-    var optimal_worker = await Worker.findOne({phone_number:optimization.selectOptimalWorker()})
+    var optimal_worker = await Worker.findOne({phone_number:optimization.selectOptimalWorker(workOrder)})
     optimal_worker.queue.push(workOrder._id)
     optimal_worker.save()
 
