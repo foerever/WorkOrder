@@ -20,15 +20,18 @@ function getPredictedTime(lat1, lng1, lat2, lng2){
     return distance / 30;
 }
 
+// Find a technician from the technician schema that can take the order
 var insert_from_order = technician.find({phone_number}, function(err, doc) {
     if (err) {
         throw "error";
     } else {
         let curTime = new Date().getTime();
-        doc.where(order.equipment_type).in('certifications').where(order.time + curTime > doc.shiftEnd && curTime < doc.shiftStart);
+        return doc.where(order.equipment_type).in('certifications')
+        .where(order.time + curTime > doc.shiftEnd && curTime < doc.shiftStart);
     }});
 
-technician.find({phone_number : insert_from_order}, 'queue', function (err, doc) {
+// To add the work order to the corresponding technician from our last query in our database
+technician.find({phone_number : insert_from_order}, 'queue', function(err, doc) {
     if (err) {
         throw "error";
     } else {
@@ -36,8 +39,6 @@ technician.find({phone_number : insert_from_order}, 'queue', function (err, doc)
     }
 });
 
-
-for (order in workOrderSchema) {
-    var person = db.findOne({technician}).where('order.equipment_type').in('technician.certifications').select(name);
-    work_order_list.person.push(order);
-}
+// Function that switches the latest order with the new order if priority of new order is higher && same fac
+// or new order is at least 3 higher && nearby fac (predicted traveling time less than 1 hour from current fac)
+var compare_priority = technician.find() and where(order.facility == 
