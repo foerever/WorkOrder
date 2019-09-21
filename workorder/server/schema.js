@@ -12,8 +12,8 @@ var workOrderSchema = mongoose.Schema({
 var technicianSchema = mongoose.Schema({
     name: String,
     phone_number: Number,
-    certifications: String,
-    shift: String
+    certifications: [String],
+    shift: Boolean
 });
 
 module.exports = {
