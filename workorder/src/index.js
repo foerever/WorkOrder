@@ -12,18 +12,18 @@ ReactDOM.render(<App />, document.getElementById('root'));
 // Learn more about service workers: https://bit.ly/CRA-PWA
 serviceWorker.unregister();
 
-var workOrderSchema = mongoose.Schema({
-    name: String,
-    email: String,
-    equipment_id: String,
-    equipment_type: String,
-    priority: Number,
-    facility: String
-});
+// var workOrderSchema = mongoose.Schema({
+//     name: String,
+//     email: String,
+//     equipment_id: String,
+//     equipment_type: String,
+//     priority: Number,
+//     facility: String
+// });
 
-var technicianSchema = mongoose.Schema({
-    name: String,
-    phone_number: Number,
-    certifications: String,
-    shift: Boolean
-});
+// var technicianSchema = mongoose.Schema({
+//     name: String,
+//     phone_number: Number,
+//     certifications: String,
+//     shift: Boolean
+// });
