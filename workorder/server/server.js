@@ -1,6 +1,10 @@
 var path = require('path');
 const cors = require('cors');
 
+const accountSid = 'ACf8dbd03481d0f69325cee1a3284434d7';
+const authToken = '359e4fd7c507e8fc06d6cb697f075c5d';
+const client = require('twilio')(accountSid, authToken);
+
 var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
@@ -68,7 +72,7 @@ app.post('/workorder_submission', async function (req, res, next) {
         equipment_type: req.body.equipment_type,
         priority: req.body.priority,
         facility: req.body.facility,
-        hours: req.body.hours
+        hours: 3
     });
     workOrder.save();
 
@@ -87,6 +91,19 @@ app.post('/workorder_submission', async function (req, res, next) {
     // var optimal_worker = await Worker.findOne({ phone_number: optimization.selectOptimalWorker(workOrder) })
     // optimal_worker.queue.push(workOrder._id)
     // optimal_worker.save()
+
+    var optimal_worker = await Worker.findOne({ phone_number: 19492957381});
+
+    console.log("optimal_worker: " + optimal_worker);
+
+    client.messages
+        .create({
+            body: ('ALERT: New Work Order: ' +  workOrder._id +  ' Location: ' + workOrder.facility
+                + ' Time to complete: ' + workOrder.hours.toString() + ' Reply YES to accept, NO to decline. '),
+            from: '+14422640841',
+            to: '+' + optimal_worker.phone_number.toString()  // replace with user.number
+        })
+        .then(message => console.log(message.sid));
 
     // need to eventually find a different page for this to go to
     res.status(200).send("thanks for submitting a work order :)")
@@ -178,18 +195,12 @@ app.post('/status', async function (req, res, next) {
 
 // updates a technician's traveling status
 app.post('/update', (req, res) => {
-    // fields sent
-    // "phone_number" // phone number of technician
-    // "field" // field to update
-    // "action" // remove
-    // "traveling": boolean
 
-    const { phone_number, attribute, travl_boolean} = req.body;
-    // // find technician in database
+    console.log("update hit");
+    const { phone_number, attribute, travl_boolean } = req.body;
+    console.log("phone number: " + phone_number + " attribute: " + attribute + " travl_boolean" + travl_boolean);
+
     var number = phone_number.substring(1);
-    // var tech = Technician.find({
-    //     phone_number: number
-    // });
 
     // if updating traveling status
     if (attribute === "traveling") {
@@ -200,12 +211,16 @@ app.post('/update', (req, res) => {
 
     // if finished with a task, remove from queue
     else if (attribute === "queue") {
-        // TODO: this is also where you text the creater of work order
-
+        // TODO: this is also where you text the creator of work order
         Worker.update({ number }, { '$pop': { queue: -1 } }, (err, doc) => {
             res.send('Completed task. Removed from queue.');
         });
     }
+
+    var tech = Worker.find({
+        phone_number: number
+    });
+    console.log("[AFTER UPDATING]" + "tech traveling" + tech.traveling + "tech queue: " + tech.queue);
 
     res.status(200)
 });
