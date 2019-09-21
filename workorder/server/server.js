@@ -71,7 +71,7 @@ app.post('/worker_submission', function (req, res, next) {
     });
 
     workerSignUp.save()
-
+    console.log('saved!!');
     // likewise, need to find a different page for this to go to
     res.status(200).send("thanks for submitting a new technician form :)")
 })

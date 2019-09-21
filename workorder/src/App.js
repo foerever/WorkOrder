@@ -3,6 +3,7 @@ import logo from './logo.png';
 import './App.css';
 import { Navbar, Nav } from 'react-bootstrap';
 import OrderSubmission from './OrderSubmission';
+import TechnicianForm from './Technician/TechnicianForm.js';
 class App extends React.Component {
 
   constructor(props) {
@@ -26,9 +27,9 @@ class App extends React.Component {
           <Nav.Link onClick={() => this.navigate('technician')}>Technician</Nav.Link>
 
         </Navbar>
-        {this.state.route == 'home'
+        {this.state.route === 'home'
           ? <OrderSubmission />
-          : <div>Technician</div>}
+          : <TechnicianForm />}
       </div>
     );
   }
