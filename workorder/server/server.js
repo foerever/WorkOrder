@@ -10,6 +10,8 @@ var models = require('./models.js');
 var WorkOrder = models.WorkOrder;
 var Worker = models.Worker;
 
+var optimization = require('./optimize.js')
+
 mongoose.connect(require('./connection.js'));
 
 //run middleware
@@ -57,7 +59,7 @@ app.post('/workorder_submission', async function (req, res, next) {
     workOrder.save()
 
     // this will eventually be replaced by the optimization algorithm
-    var optimal_worker = await Worker.findOne({name:"Anthony"})
+    var optimal_worker = await Worker.findOne({phone_number:optimization.selectOptimalWorker()})
     optimal_worker.queue.push(workOrder._id)
     optimal_worker.save()
 

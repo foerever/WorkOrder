@@ -1,7 +1,4 @@
 var mongoose = require('mongoose');
-var server = require('../server');
-var form = require('../../src/OrderSubmission/OrderSubmissionForm');
-
 var models = require('./models.js');
 var WorkOrder = models.WorkOrder;
 var Worker = models.Worker;
@@ -63,3 +60,10 @@ const find_phone_number = async (valid_workers) => {
 // Append newOrder.id to head of person.queue
 // Otherwise: 
 // Append to end of person.queue 
+
+
+module.exports = {
+    selectOptimalWorker: function () {
+       return 7138288185;
+    }
+};
