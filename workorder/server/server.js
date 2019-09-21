@@ -122,7 +122,7 @@ app.get('/getFacilities', (req, res) => {
 
 app.post('/getFacilitiesInBox', (req, res) => {
     const { bottomLeft, upperRight } = req.body;
-    console.log(req.body)
+    // console.log(req.body)
     Facility.find({
         'location': {
             '$geoWithin': {
