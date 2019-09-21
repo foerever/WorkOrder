@@ -6,13 +6,14 @@ import { Container, Row, Col } from 'react-bootstrap'
 
 const OrderSubmission = () => (
     <div>
-        <Container>
-            <Row>
-                <Col xs={3}><OrderSubmissionForm /></Col>
-                <Col xs={9}><MapView /></Col>
+        <Container >
+            <Row >
+                <Col xs={4} > <OrderSubmissionForm /></Col>
+                <Col xs={8}><MapView /></Col>
             </Row>
         </Container>
-    </div>
+
+    </div >
 );
 
 export default OrderSubmission;
