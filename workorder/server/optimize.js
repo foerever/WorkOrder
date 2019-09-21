@@ -57,18 +57,6 @@ const find_valid_workers = async (order) => {
     return valid_workers;
 }
 
-// const find_phone_number = async (valid_workers) => {
-//     // To add the work order to the corresponding Worker from our last query in our database
-//     var phone_number = await Worker.find({phone_number : valid_workers}, 'queue', function(err, doc) {
-//         if (err) {
-//             throw "error";
-//         } else {
-//             doc.push(order.id);
-//         }
-//     });
-// }
-
-
 // // Function that switches the latest order with the new order if priority of new order is higher && same fac
 // // or new order is at least 3 higher && nearby fac (predicted traveling time less than 1 hour from current fac)
 // var compare_priority = Worker.find() and where(order.facility == 
@@ -103,5 +91,6 @@ module.exports = {
         candidate.queue.push(workOrder);
         candidate.traveling ? candidate.queue.sort((a,b) => {return a.priority - b.priority}) :
         candidate.queue.slice(1).sort((a,b) => {return a.priority - b.priority});
+        return candidate.phone_number;
     }
 };
