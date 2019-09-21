@@ -6,6 +6,7 @@ Chevron has large scale operations and complex process facilities (refineries an
 
 # Challenge
 Build a work order tracking system that tracks:
+
 (1) the work orders that are submitted
 (2) the technicians that are completing them to optimize how technicians are assigned and work orders are completed. 
 
