@@ -10,7 +10,7 @@ var mongoose = require('mongoose');
 var WorkOrder = models.WorkOrder;
 var Worker = models.Worker;
 
-mongoose.connect(require('./connection.js'))
+mongoose.connect(require('./connection.js'));
 
 //run middleware
 app.use(cors());
@@ -66,7 +66,9 @@ app.post('/worker_submission', function (req, res, next) {
         name: req.body.name,
         phone_number: req.body.phone_number,
         certifications: req.body.certifications,
-        shift: req.body.shift
+        shift: req.body.shift,
+        queue: [],
+        traveling: false
     });
 
     workerSignUp.save()

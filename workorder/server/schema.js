@@ -13,7 +13,9 @@ var workerSchema = mongoose.Schema({
     name: String,
     phone_number: Number,
     certifications: [String],
-    shift: Boolean
+    shift: Boolean,
+    queue: [String],
+    traveling: Boolean
 });
 
 module.exports = {

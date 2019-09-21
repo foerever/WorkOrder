@@ -17,7 +17,7 @@ Knowing where technicians are, what they are certified/qualified to repair, how 
 ## Technicians
 Submit a new technician
 ```
-curl -d '{"name":"Anthony", "phone_number":7138288185, "certifications":["home building"], "shift":true}' -H "Content-Type: application/json" -X POST http://localhost:8000/worker_submission
+curl -d '{"name":"Anthony", "phone_number":7138288185, "certifications":["home building"], "shift":true, "queue":[],"traveling":false}' -H "Content-Type: application/json" -X POST http://localhost:8000/worker_submission
 ```
 Get technnicians
 ```
