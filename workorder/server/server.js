@@ -72,14 +72,16 @@ app.post('/workorder_submission', async function (req, res, next) {
     });
     workOrder.save();
 
-    optimization.selectOptimalWorker(workOrder)
-        .then(candidate => {
-            Worker.update({ phone_number: candidate.phone_number }, { queue: candidate.queue }, (err, doc) => {
-                console.log(doc.n, doc.nModified)
-            });
-            // doc.save();
-        })
-        .catch(err => console.log(err));
+    //  optimization code off until now so we don't dirty our data
+
+    // optimization.selectOptimalWorker(workOrder)
+    //     .then(candidate => {
+    //         Worker.update({ phone_number: candidate.phone_number }, { queue: candidate.queue }, (err, doc) => {
+    //             console.log(doc.n, doc.nModified)
+    //         });
+    //         // doc.save();
+    //     })
+    //     .catch(err => console.log(err));
 
     // this will eventually be replaced by the optimization algorithm
     // var optimal_worker = await Worker.findOne({ phone_number: optimization.selectOptimalWorker(workOrder) })
@@ -120,7 +122,7 @@ app.get('/getFacilities', (req, res) => {
 
 app.post('/getFacilitiesInBox', (req, res) => {
     const { bottomLeft, upperRight } = req.body;
-    console.log(req.body)
+    // console.log(req.body)
     Facility.find({
         'location': {
             '$geoWithin': {

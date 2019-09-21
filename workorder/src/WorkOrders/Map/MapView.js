@@ -2,7 +2,15 @@ import React from 'react';
 import '../../App.css';
 import { Map, TileLayer, Marker, Popup } from 'react-leaflet'
 import axios from 'axios';
+import L from 'leaflet'
+// import facilityMarker from './resources/facility_marker.png';
 // import 'leaflet/dist/leaflet.css';
+
+let icon = L.icon({
+    iconRetinaUrl: require('./resources/facility_marker.png'),
+    iconUrl: require('./resources/facility_marker.png'),
+    shadowUrl: require('./resources/facility_marker.png')
+})
 class MapView extends React.Component {
     constructor(props) {
         super(props);
@@ -34,6 +42,7 @@ class MapView extends React.Component {
                     let coordinates = facility.location.coordinates;
                     coordinates.reverse();
                     return (<Marker
+                        icon={icon}
                         position={coordinates} >
                         <Popup>Facility ID: <br />{facility.facilityId}</Popup>
                     </Marker>);

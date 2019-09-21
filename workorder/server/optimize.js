@@ -92,7 +92,7 @@ module.exports = {
         return find_valid_workers(workOrder)
             .then(validWorkers => {
                 let hours = 0;
-                console.log('validWorkers ', validWorkers);
+                // console.log('validWorkers ', validWorkers);
                 let candidate = validWorkers[0];
 
                 for (let person of validWorkers) {
@@ -128,7 +128,7 @@ module.exports = {
 
                 }
                 // console.log("RETURNING CANDIDATE: ", candidate);
-                console.log("PUSHING WORKORDER: ", workOrder);
+                // console.log("PUSHING WORKORDER: ", workOrder);
                 candidate.queue.push(workOrder);
                 candidate.traveling ? candidate.queue.sort((a, b) => { return a.priority - b.priority }) :
                     candidate.queue.slice(1).sort((a, b) => { return a.priority - b.priority });
