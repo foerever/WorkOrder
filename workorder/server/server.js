@@ -12,7 +12,6 @@ var Worker = models.Worker;
 var Facility = models.Facility;
 
 var optimization = require('./optimize.js')
-
 mongoose.connect(require('./connection.js'));
 
 //run middleware
@@ -44,6 +43,20 @@ app.get('/', (req, res) => {
     res.sendFile(path.resolve(__dirname, '../public/', 'index.html'));
 });
 
+// app.get('/delete', (req, res) => {
+//     Worker.remove({}).then(res.json({ message: "deleted everything" }));
+// });
+
+//  testing purposes only
+app.post('/addWorkOrderToWorkerQueue', (req, res) => {
+    const { phone_number, name, email, equipment_id, equipment_type, priority, facility, hours } = req.body;
+    const workOrder = new WorkOrder({
+        name, email, equipment_id, equipment_type, priority, facility, hours
+    });
+    Worker.update({ phone_number }, { '$push': { queue: workOrder } }, (err, doc) => {
+        res.send('Push to queue success');
+    });
+});
 
 // POSTS 
 app.post('/workorder_submission', async function (req, res, next) {
@@ -54,15 +67,24 @@ app.post('/workorder_submission', async function (req, res, next) {
         equipment_id: req.body.equipment_id,
         equipment_type: req.body.equipment_type,
         priority: req.body.priority,
-        facility: req.body.facility
+        facility: req.body.facility,
+        hours: req.body.hours
     });
+    workOrder.save();
 
-    workOrder.save()
+    optimization.selectOptimalWorker(workOrder)
+        .then(candidate => {
+            Worker.update({ phone_number: candidate.phone_number }, { queue: candidate.queue }, (err, doc) => {
+                console.log(doc.n, doc.nModified)
+            });
+            // doc.save();
+        })
+        .catch(err => console.log(err));
 
     // this will eventually be replaced by the optimization algorithm
-    var optimal_worker = await Worker.findOne({ phone_number: optimization.selectOptimalWorker(workOrder) })
-    optimal_worker.queue.push(workOrder._id)
-    optimal_worker.save()
+    // var optimal_worker = await Worker.findOne({ phone_number: optimization.selectOptimalWorker(workOrder) })
+    // optimal_worker.queue.push(workOrder._id)
+    // optimal_worker.save()
 
     // need to eventually find a different page for this to go to
     res.status(200).send("thanks for submitting a work order :)")

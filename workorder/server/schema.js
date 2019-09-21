@@ -7,6 +7,7 @@ var workOrderSchema = mongoose.Schema({
     equipment_type: String,
     priority: Number,
     facility: String,
+    hours: Number,
 }, {
     timestamps: true
 });
