@@ -7,7 +7,7 @@ function App() {
   return (
     <div className="App">
       <Navbar bg="light" expand="lg">
-        <img style={{ height: '100%', width: '2em', marginRight: '0.5em' }} src={logo} />
+        <img style={{ height: '100%', width: '2em', marginRight: '0.5em' }} alt="logo" src={logo} />
 
         <Navbar.Brand href="#home">Chevron | WorkOrders</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
