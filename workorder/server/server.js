@@ -4,9 +4,9 @@ const cors = require('cors');
 var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
-var models = require('./models.js');
 var mongoose = require('mongoose');
 
+var models = require('./models.js');
 var WorkOrder = models.WorkOrder;
 var Worker = models.Worker;
 
@@ -43,7 +43,7 @@ app.get('/', (req, res) => {
 
 
 // POSTS 
-app.post('/workorder_submission', function (req, res, next) {
+app.post('/workorder_submission', async function (req, res, next) {
 
     var workOrder = new WorkOrder({
         name: req.body.name,
@@ -55,6 +55,12 @@ app.post('/workorder_submission', function (req, res, next) {
     });
 
     workOrder.save()
+
+    // this will eventually be replaced by the optimization algorithm
+    var optimal_worker = await Worker.findOne({name:"Anthony"})
+    optimal_worker.queue.push(workOrder._id)
+    optimal_worker.save()
+
     // need to eventually find a different page for this to go to
     res.status(200).send("thanks for submitting a work order :)")
 })
