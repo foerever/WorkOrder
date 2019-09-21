@@ -13,8 +13,6 @@ Build a work order tracking system that tracks:
 
 Knowing where technicians are, what they are certified/qualified to repair, how long they are planning to being there, other work orders in the same or nearby location, etc will be *invaluable* in being able to dynamically schedule and dispatch existing and new work orders to technicians at the beginning of the day and while onsite. Updating each technician with their schedule of work orders can be done through any means of mobile technology, SMS, call, mobile app, etc.
 
-Data set here!
-
 # Testing Server Code
 ## Technicians
 Submit a new technician
