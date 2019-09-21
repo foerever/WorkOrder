@@ -12,7 +12,7 @@ var Worker = models.Worker;
 var Facility = models.Facility;
 
 var optimization = require('./optimize.js')
-mongoose.connect(require('./connection.js'));
+mongoose.connect(require('./connection.js'), { useFindAndModify: false });
 
 //run middleware
 app.use(cors());
@@ -152,24 +152,26 @@ app.post('/status', async function (req, res, next) {
     console.log("status hit");
 
     // find technician in database
-    var number = req.body.phone_number;
-    console.log("number: " + number.substring(1));
+    var number = req.body.phone_number.substring(1);
+    console.log("number: " + number);
     // this one is to modify the database
-
     // this one is so u can see the contents or whatever u need to do
-    var tech_object = (await Worker.findOne({ phone_number: number.substring(1) }))[0].toObject();
-    console.log(tech_object);
-    // unfortunately to save the object we need to refetch it again for now | temporary fix
-    var tech_cursor = await Worker.findOne({ phone_number: number.substring(1) })
-    tech_cursor.traveling = true;
-    tech_cursor.save();
+    // var tech_object = (await Worker.findOne({ phone_number: number }));
+    // console.log(tech_object);
+    // console.log("before: " + tech_object.traveling);
+    // tech_object.traveling = false;
+    //
+    // const filter = { phone_number: number };
+    // const update = { traveling: false };
+    // let doc = await Worker.findOneAndUpdate(filter, update, {
+    //     new: true // new specifies that 'doc' is the updated version
+    // });
 
-    // find technician's first work order
-    // var first_work_order = tech.queue[0];
-    // console.log("first_work_order:" + first_work_order);
-    // var t = tech.traveling;
+    var tech_after = (await Worker.findOne({ phone_number: number }));
 
-    res.status(200).send({ "traveling": "yes" })
+    console.log("traveling? " + tech_after.traveling);
+    console.log("next ticket: " + tech_after.queue[0]);
+    res.status(200).send({ traveling: tech_after.traveling, destination: tech_after.queue[0]})
 });
 
 // updates a technician's traveling status
@@ -180,15 +182,30 @@ app.post('/update', (req, res) => {
     // "action" // remove
     // "traveling": boolean
 
-    // find technician in database
-    var number = req.body.number;
-    var tech = Technician.find({
-        phone_number: number
-    });
+    const { phone_number, attribute, travl_boolean} = req.body;
+    // // find technician in database
+    var number = phone_number.substring(1);
+    // var tech = Technician.find({
+    //     phone_number: number
+    // });
 
-    console.log(tech);
+    // if updating traveling status
+    if (attribute === "traveling") {
+        Worker.update({ number }, { '$set': { traveling: travl_boolean } }, (err, doc) => {
+            res.send('Updated traveling status to ' + travl_boolean);
+        });
+    }
 
-    tech.save();
+    // if finished with a task, remove from queue
+    else if (attribute === "queue") {
+        // TODO: this is also where you text the creater of work order
+
+        Worker.update({ number }, { '$pop': { queue: -1 } }, (err, doc) => {
+            res.send('Completed task. Removed from queue.');
+        });
+    }
+
+    res.status(200)
 });
 
 const port = process.env.PORT || 8000;
