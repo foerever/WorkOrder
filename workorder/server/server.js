@@ -14,25 +14,25 @@ mongoose.connect(require('./connection.js'));
 
 //run middleware
 app.use(cors());
-app.options('*', cors());
+// app.options('*', cors());
 
 //parse inc requests
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
-  extended: true
+    extended: true
 }));
 
 // GETs
 app.get('/workorders', (req, res) => {
     WorkOrder.find({
-    }, function(err, doc) {
+    }, function (err, doc) {
         res.status(200).send(doc);
     });
 })
 
 app.get('/workers', (req, res) => {
     Worker.find({
-    }, function(err, doc) {
+    }, function (err, doc) {
         res.status(200).send(doc)
     })
 })
@@ -43,7 +43,7 @@ app.get('/', (req, res) => {
 
 
 // POSTS 
-app.post('/workorder_submission', function (req,res,next) {
+app.post('/workorder_submission', function (req, res, next) {
 
     var workOrder = new WorkOrder({
         name: req.body.name,
@@ -55,7 +55,6 @@ app.post('/workorder_submission', function (req,res,next) {
     });
 
     workOrder.save()
-
     // need to eventually find a different page for this to go to
     res.status(200).send("thanks for submitting a work order :)")
 })
@@ -83,7 +82,7 @@ const port = process.env.PORT || 8000;
 app.use(express.static(path.resolve(__dirname, '../public/')))
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     var err = new Error('File Not Found');
     err.status = 404;
     next(err);
