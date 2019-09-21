@@ -35,7 +35,7 @@ app.get('/workers', (req, res) => {
     }, function(err, doc) {
         res.status(200).send(doc)
     })
-})
+});
 
 app.get('/', (req, res) => {
     res.sendFile(path.resolve(__dirname, '../public/', 'index.html'));
@@ -75,7 +75,65 @@ app.post('/worker_submission', function (req, res, next) {
 
     // likewise, need to find a different page for this to go to
     res.status(200).send("thanks for submitting a new technician form :)")
-})
+});
+
+// Technician has declined the work order, remove from their queue
+app.post('/declined', (req, res) => {
+    // find technician in database
+    var number = req.body.number;
+    var tech = Technician.find({
+        phone_number: number
+    });
+
+    var dec_work_order = tech.queue.pop();
+
+    // TODO: function to reassign work order
+});
+
+// functionally a get request to retrieve information about the technician's current status
+app.post('/status', function(req, res) {
+    console.log("status hit");
+
+    // find technician in database
+    var number = req.body.number;
+    console.log("number: " + number.substring(1));
+    Worker.find({
+        phone_number: number.substring(1)
+    }, (err, doc) => {
+        if (err) console.log(err);
+        else console.log(doc.name);
+    });//     .lean().exec(function(err, doc) {
+    //     console.log(doc.name);
+    //
+    // });
+
+
+    // find technician's first work order
+    // var first_work_order = tech.queue[0];
+    // console.log("first_work_order:" + first_work_order);
+    // var t = tech.traveling;
+
+    res.status(200).send({ "traveling": "yes" })
+});
+
+// updates a technician's traveling status
+app.post('/update', (req, res) => {
+    // fields sent
+    // "phone_number" // phone number of technician
+    // "field" // field to update
+    // "action" // remove
+    // "traveling": boolean
+
+    // find technician in database
+    var number = req.body.number;
+    var tech = Technician.find({
+        phone_number: number
+    });
+
+    console.log(tech);
+
+    tech.save();
+});
 
 const port = process.env.PORT || 8000;
 
