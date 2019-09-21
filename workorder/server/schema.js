@@ -6,10 +6,10 @@ var workOrderSchema = mongoose.Schema({
     equipment_id: String,
     equipment_type: String,
     priority: Number,
-    facility: String
+    facility: String,
 });
 
-var technicianSchema = mongoose.Schema({
+var workerSchema = mongoose.Schema({
     name: String,
     phone_number: Number,
     certifications: [String],
@@ -18,6 +18,6 @@ var technicianSchema = mongoose.Schema({
 
 module.exports = {
     workOrderSchema: workOrderSchema,
-    technicianSchema: technicianSchema,
+    workerSchema: workerSchema,
 }
 

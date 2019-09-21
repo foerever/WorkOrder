@@ -19,7 +19,7 @@ router.post('/workorder_submission', function (req, res, next) {
     console.log(req.body)
 })
 
-router.post('/technician_submission', function (req, res, next) {
+router.post('/worker_submission', function (req, res, next) {
     console.log(req.body)
 })
 

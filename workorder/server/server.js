@@ -7,8 +7,8 @@ var app = express();
 var models = require('./models.js');
 var mongoose = require('mongoose');
 
+var WorkOrder = models.WorkOrder;
 var Worker = models.Worker;
-var Technician = models.Technician;
 
 mongoose.connect(require('./connection.js'))
 
@@ -23,15 +23,15 @@ app.use(bodyParser.urlencoded({
 }));
 
 // GETs
-app.get('/workers', (req, res) => {
-    Worker.find({
+app.get('/workorders', (req, res) => {
+    WorkOrder.find({
     }, function(err, doc) {
         res.status(200).send(doc);
     });
 })
 
-app.get('/technicians', (req, res) => {
-    Technician.find({
+app.get('/workers', (req, res) => {
+    Worker.find({
     }, function(err, doc) {
         res.status(200).send(doc)
     })
@@ -45,7 +45,7 @@ app.get('/', (req, res) => {
 // POSTS 
 app.post('/workorder_submission', function (req,res,next) {
 
-    var workOrder = new Worker({
+    var workOrder = new WorkOrder({
         name: req.body.name,
         email: req.body.email,
         equipment_id: req.body.equipment_id,
@@ -60,16 +60,16 @@ app.post('/workorder_submission', function (req,res,next) {
     res.status(200).send("thanks for submitting a work order :)")
 })
 
-app.post('/technician_submission', function (req, res, next) {
+app.post('/worker_submission', function (req, res, next) {
 
-    var technicianSignUp = new Technician({
+    var workerSignUp = new Worker({
         name: req.body.name,
         phone_number: req.body.phone_number,
         certifications: req.body.certifications,
         shift: req.body.shift
     });
 
-    technicianSignUp.save()
+    workerSignUp.save()
 
     // likewise, need to find a different page for this to go to
     res.status(200).send("thanks for submitting a new technician form :)")
