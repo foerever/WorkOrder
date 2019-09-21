@@ -72,7 +72,7 @@ app.post('/workorder_submission', async function (req, res, next) {
         equipment_type: req.body.equipment_type,
         priority: req.body.priority,
         facility: req.body.facility,
-        hours: 3
+        hours: req.body.hours
     });
     workOrder.save();
 
@@ -92,14 +92,14 @@ app.post('/workorder_submission', async function (req, res, next) {
     // optimal_worker.queue.push(workOrder._id)
     // optimal_worker.save()
 
-    var optimal_worker = await Worker.findOne({ phone_number: 19492957381});
+    var optimal_worker = await Worker.findOne({ phone_number: 17138288185});
 
     console.log("optimal_worker: " + optimal_worker);
 
     client.messages
         .create({
-            body: ('ALERT: New Work Order: ' +  workOrder._id +  ' Location: ' + workOrder.facility
-                + ' Time to complete: ' + workOrder.hours.toString() + ' Reply YES to accept, NO to decline. '),
+            body: ('\nALERT: \nNew chevron work order.\n\nWork Order Id: ' +  workOrder._id + '\n\n Location: ' + workOrder.facility
+                + '\n\n Estimated hours to complete: ' + workOrder.hours.toString() + '\n\n Reply YES to accept, NO to decline. '),
             from: '+14422640841',
             to: '+' + optimal_worker.phone_number.toString()  // replace with user.number
         })
