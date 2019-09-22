@@ -35,7 +35,8 @@ class TechnicianForm extends React.Component {
         axios.post('http://localhost:8000/worker_submission', {
             name: this.form.name,
             phone_number: this.form.phone,
-            certifications: this.allCerts.filter(cert => this.certs[`check-${cert}`] === true)
+            certifications: this.allCerts.filter(cert => this.certs[`check-${cert}`] === true),
+            shift: this.form.shift
         });
     }
     render() {
