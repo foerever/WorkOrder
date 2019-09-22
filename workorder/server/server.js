@@ -116,10 +116,37 @@ app.post('/addFacilities', (req, res) => {
         .catch(err => res.json(err));
 });
 
+
 app.get('/getFacilities', (req, res) => {
     Facility.find({}).then(doc => res.json(doc)).catch(err => console.log(err));
 })
 
+const getRandomInt = (min, max) => {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+app.get('/deleteAllFacilities', (req, res) => {
+    Facility.remove({}).then(res.send('Successfully deleted all facilities.'));
+
+});
+app.get('/populateFacilities/:num', (req, res) => {
+    let generatedFacilities = [];
+    // console.log(params);
+    const { num } = req.params;
+    for (let i = 0; i < num; i++) {
+        generatedFacilities.push({
+            facilityId: `Facility ${i + 1}`,
+            location: {
+                type: 'Point',
+                coordinates: [getRandomInt(-74.0060, -122.3321), getRandomInt(29.3013, 47.6062)]
+            }
+        })
+    }
+    Facility.insertMany(generatedFacilities)
+        .then(doc => { res.send(`Successfully generated ${num} facilities.`); })
+        .catch(err => res.json(err));
+});
 
 
 app.get('/getWorkerMarkers', (req, ress) => {

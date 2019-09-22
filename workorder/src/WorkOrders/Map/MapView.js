@@ -3,6 +3,8 @@ import '../../App.css';
 import { Map, TileLayer, Marker, Popup } from 'react-leaflet'
 import axios from 'axios';
 import L from 'leaflet'
+import MarkerClusterGroup from 'react-leaflet-markercluster';
+
 // import facilityMarker from './resources/facility_marker.png';
 // import 'leaflet/dist/leaflet.css';
 
@@ -53,26 +55,30 @@ class MapView extends React.Component {
                         attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    {this.state.facilities.map(facility => {
-                        let coordinates = facility.location.coordinates;
-                        coordinates.reverse();
-                        return (
-                            <Marker
-                                icon={facilityIcon}
-                                position={coordinates}
-                                key={facility.facilityId}>
-                                <Popup>Facility ID: <br />{facility.facilityId}</Popup>
-                            </Marker>);
-                    }).concat(this.state.workerMarkers.map(worker => {
-                        return (
-                            <Marker
-                                key={worker.name}
-                                icon={worker.traveling ? technicianIconTraveling : technicianIconFixing}
-                                position={worker.coordinates} >
-                                <Popup>Worker Name: <br />{worker.name}</Popup>
-                            </Marker>)
-                    }))}
-
+                    <MarkerClusterGroup
+                        disableClusteringAtZoom={9}
+                        spiderfyOnMaxZoom={false}>
+                        {this.state.facilities.map(facility => {
+                            let coordinates = facility.location.coordinates;
+                            coordinates.reverse();
+                            console.log(facility.facilityId)
+                            return (
+                                <Marker
+                                    icon={facilityIcon}
+                                    position={coordinates}
+                                    key={facility.facilityId}>
+                                    <Popup><div>Facility ID: <br />{facility.facilityId}</div></Popup>
+                                </Marker>);
+                        }).concat(this.state.workerMarkers.map(worker => {
+                            return (
+                                <Marker
+                                    key={worker.name}
+                                    icon={worker.traveling ? technicianIconTraveling : technicianIconFixing}
+                                    position={worker.coordinates} >
+                                    <Popup><div>Worker Name: <br />{worker.name}</div></Popup>
+                                </Marker>)
+                        }))}
+                    </MarkerClusterGroup>
                 </Map>
 
             </div>);
