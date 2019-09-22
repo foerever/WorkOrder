@@ -14,6 +14,7 @@ var models = require('./models.js');
 var WorkOrder = models.WorkOrder;
 var Worker = models.Worker;
 var Facility = models.Facility;
+var sampleData = require('./sample_data.js')
 
 var optimization = require('./optimize.js')
 mongoose.connect(require('./connection.js'), { useFindAndModify: false });
@@ -244,6 +245,46 @@ app.post('/status', async function (req, res, next) {
     console.log("num in the queue: " + tech_after.queue.length);
     res.status(200).send({ state: tech_after.state, num_queue: tech_after.queue.length, destination: tech_after.queue[0]})
 });
+
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getRandomTimeStampPast24Hours() {
+    var newDate = new Date();
+    newDate.setHours(getRandomInt(1,24));
+    return newDate;
+}
+
+app.post('/addSampleData', async (req, res) => {
+    var input = req.body.type;
+    if (input === 0 || input === 3) {
+        var workers = sampleData.workers;
+        for (let worker of workers) {
+            var default_worker = new Worker(worker);
+            default_worker.save();
+        }
+    }
+    if (input === 1 || input === 3) {
+        var work_orders = sampleData.work_orders;
+        for (let work_order of work_orders) {
+            work_order["createdAt"] = getRandomTimeStampPast24Hours();
+            var default_work_order = new WorkOrder(work_order);
+            default_work_order.save();
+        }
+    }
+    if (input == 2 || input === 3) {
+        var facilities = sampleData.facilities;
+        for (let facility of facilities) {
+            var default_facility = new Facility(facility);
+            default_facility.save();
+        }
+    }
+
+    res.status(200).send("You updated the database!\n")
+})
 
 app.post('/addErica', async (req, res) => {
     var workerSignUp = new Worker({
