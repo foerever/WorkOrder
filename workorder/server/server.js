@@ -258,6 +258,17 @@ app.post('/clear', async (req, res) => {
     Facility.collection.drop();
 })
 
+app.post('/clearDB', async (req, res) => {
+    console.log("Attempted to clear workers database!")
+    const {input} = req.body
+    if (input === 0)
+        Worker.collection.drop();
+    else if (input === 1)
+        WorkOrder.collection.drop();
+    else if (input === 2)
+        Facility.collection.drop();
+})
+
 // updates a technician's traveling status
 app.post('/update',  async (req, res) => {
 
