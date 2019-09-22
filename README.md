@@ -41,6 +41,7 @@ We have a server instance that runs on localhost:8000, it connects to an aws sto
 # Testing Server Code
 
 There are a LOT of endpoints for this project. The primary routes you might want to use to ping our endpoints with Postman or curl during development are:
+
 submitting a new worker/technician application: `/worker_submission`
 
 getting all available workers: `/workers`
