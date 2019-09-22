@@ -18,7 +18,7 @@ var workerSchema = mongoose.Schema({
     certifications: [String],
     shift: Boolean,
     queue: [workOrderSchema],
-    traveling: Boolean,
+    state: Number,
     hoursLeft: Number
 });
 

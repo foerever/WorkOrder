@@ -100,7 +100,7 @@ app.post('/workorder_submission', async function (req, res, next) {
     var optimal_worker = await Worker.findOne({ phone_number: 19492957381 });
 
     console.log("optimal_worker: " + optimal_worker.name);
-    optimal_worker.queue.push(workOrder._id)
+    optimal_worker.queue.push(workOrder);
     optimal_worker.save()
 
     client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440').executions
@@ -122,7 +122,7 @@ app.post('/worker_submission', function (req, res, next) {
         certifications: req.body.certifications,
         shift: req.body.shift === 'AM' ? true : false,
         queue: [],
-        traveling: false,
+        state: 0,
         hoursLeft: 0
     });
     console.log(workerSignUp.shift);
@@ -274,7 +274,6 @@ app.post('/update',  async (req, res) => {
                 // decrement hours on this worker
                 worker.hoursLeft -= hrs;
                 worker.save();
-
                 // TODO: function to reassign work order
             }
             // hacky do nothing if not found..but it shouldn't be not found anyways ¯\_(ツ)_/¯ just in case
