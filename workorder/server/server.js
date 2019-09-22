@@ -197,7 +197,7 @@ app.get('/getWorkerMarkers', (req, ress) => {
                                 let coordinates = res[allFacilityIds.indexOf(curFacility.facility)].location.coordinates;
                                 //  offset so that the facility is still visible
                                 coordinates[0] += 0.05;
-                                coordinates[0] += 0.05;
+                                coordinates[1] += 0.05;
                                 coordinates.reverse();
                                 // console.log('Name: ', worker.name);
                                 markers.push({
@@ -254,7 +254,7 @@ function getRandomInt(min, max) {
 
 function getRandomTimeStampPast24Hours() {
     var newDate = new Date();
-    newDate.setHours(getRandomInt(1,24));
+    newDate.setHours(getRandomInt(1, 24));
     return newDate;
 }
 
