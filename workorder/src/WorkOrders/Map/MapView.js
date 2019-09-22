@@ -79,7 +79,7 @@ class MapView extends React.Component {
                             return (
                                 <Marker
                                     key={worker.name}
-                                    icon={worker.traveling ? technicianIconTraveling : technicianIconFixing}
+                                    icon={worker.state === 2 ? technicianIconTraveling : technicianIconFixing}
                                     position={worker.coordinates} >
                                     <Popup>
                                         <div style={{ fontWeight: 'bolder' }}>Technician:<br />

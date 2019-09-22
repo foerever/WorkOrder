@@ -201,7 +201,7 @@ app.get('/getWorkerMarkers', (req, ress) => {
                                 // console.log('Name: ', worker.name);
                                 markers.push({
                                     name: worker.name,
-                                    traveling: worker.traveling,
+                                    state: worker.state,
                                     coordinates,
                                     curFacility: curFacility.facility
                                 });
@@ -242,7 +242,7 @@ app.post('/status', async function (req, res, next) {
     console.log("state " + tech_after.state);
     console.log("next ticket: " + tech_after.queue[0]);
     console.log("num in the queue: " + tech_after.queue.length);
-    res.status(200).send({ state: tech_after.state, num_queue: tech_after.queue.length, destination: tech_after.queue[0]})
+    res.status(200).send({ state: tech_after.state, num_queue: tech_after.queue.length, destination: tech_after.queue[0] })
 });
 
 app.post('/addErica', async (req, res) => {

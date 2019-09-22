@@ -2,7 +2,7 @@ import React from 'react';
 import '../App.css';
 import { Form, Button, Card, Toast } from 'react-bootstrap';
 import axios from 'axios';
-
+import toastLogo from './chevron_toast_logo.png';
 class OrderSubmissionForm extends React.Component {
     constructor(props) {
         super(props);
@@ -42,14 +42,15 @@ class OrderSubmissionForm extends React.Component {
     render() {
         return (
             <div style={{ textAlign: 'left', fontSize: '0.9em' }}>
-                <Toast style={{ position: 'absolute', top: '0px', left: '0px', zIndex: 999 }} onClose={() => this.setShowToast(false)} show={this.state.showToast} delay={3000} autohide>
+                <Toast style={{ position: 'absolute', top: '0px', left: '0px', zIndex: 999 }} onClose={() => this.setShowToast(false)} show={this.state.showToast} delay={4000} autohide>
                     <Toast.Header>
                         <img
                             src="holder.js/20x20?text=%20"
                             className="rounded mr-2"
                             alt=""
                         />
-                        <strong className="mr-auto">Thank you for your submission. </strong>
+                        <strong className="mr-auto">
+                            <img style={{ height: '1em', width: '1em' }} src={toastLogo} alt="logo"></img> Thank you for your submission. </strong>
                         <small>0s ago</small>
                     </Toast.Header>
                     <Toast.Body>Our system will match your work order with a certified Chevron technician.</Toast.Body>
