@@ -4,6 +4,7 @@ import { Map, TileLayer, Marker, Popup } from 'react-leaflet'
 import axios from 'axios';
 import L from 'leaflet'
 import MarkerClusterGroup from 'react-leaflet-markercluster';
+import logo from '../../logo.png';
 
 // import facilityMarker from './resources/facility_marker.png';
 // import 'leaflet/dist/leaflet.css';
@@ -52,8 +53,8 @@ class MapView extends React.Component {
                 <Map ref={(ref) => { this.map = ref; }} style={{ height: '90vh', width: '100%' }}
                     center={[29.749907, -95.358421]} zoom={10}>
                     <TileLayer
-                        attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution='Chevron Technologies 2019'
+                        url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
                     />
                     <MarkerClusterGroup
                         disableClusteringAtZoom={7}
@@ -67,21 +68,22 @@ class MapView extends React.Component {
                                     position={coordinates}
                                     key={facility.facilityId}>
                                     <Popup>
-                                        <div>Facility ID: <br />
+                                        <div>
+                                            <img style={{ height: '1.5em', width: '1.5em' }} src={logo} alt="logo" />
+                                            <span style={{ fontWeight: 'bolder' }}>Facility ID:</span> <br />
                                             <div>{facility.facilityId}</div>
                                         </div>
                                     </Popup>
                                 </Marker>);
-                        }).concat(this.state.workerMarkers.map(worker => {
+                        }).concat(this.state.workerMarkers.filter(worker => worker.state > 0).map(worker => {
                             return (
                                 <Marker
                                     key={worker.name}
                                     icon={worker.traveling ? technicianIconTraveling : technicianIconFixing}
                                     position={worker.coordinates} >
                                     <Popup>
-                                        <div>Technician Name: <br />
-                                            <div>{worker.name}</div>
-                                            <div>Technician is currently {worker.traveling === true
+                                        <div style={{ fontWeight: 'bolder' }}>Technician:<br />
+                                            <div>{worker.name} is currently {worker.state === 2
                                                 ? 'traveling to this facility.'
                                                 : 'working on the facility.'}
                                             </div>
