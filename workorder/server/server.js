@@ -102,6 +102,7 @@ app.post('/workorder_submission', async function (req, res, next) {
     console.log("optimal_worker: " + optimal_worker.name);
     optimal_worker.queue.push(workOrder);
     optimal_worker.save()
+    // TODO: make sure to add the hours onto hoursLeft
 
     client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440').executions
         .create({
@@ -290,7 +291,7 @@ app.post('/update', async (req, res) => {
     // if updating traveling status
     if (attribute === "traveling") {
         var worker = await Worker.findOne({ phone_number: number });
-        worker.traveling = change;
+        worker.state = change;
         worker.save();
     }
 
