@@ -14,7 +14,7 @@ mongoose.connect(require('./connection.js'));
 // Query the facility table to get facility of a given work order
 // Return target_facility cursor with latitude and longitude info
 const find_fac = async (order) => {
-    var target_facility = await Facility.find({ facility: order.facility }, function (err, doc) {
+    var target_facility = await Facility.find({ facilityId: order.facility }, function (err, doc) {
         if (err) {
             throw "error";
         } else {
@@ -66,9 +66,6 @@ const find_valid_workers = async (order) => {
         }
     });
     
-    console.log("valid_workers ", valid_workers.map(x => x).filter(worker => {
-        return worker.certifications.includes(order.equipment_type);
-    }));
     return valid_workers.map(x => x).filter(worker => {
         return worker.certifications.includes(order.equipment_type);
     });
@@ -85,7 +82,7 @@ const find_valid_workers = async (order) => {
 
 
 module.exports = {
-    selectOptimalWorker: function (workOrder) {
+    selectOptimalWorker: async function (workOrder) {
         return find_valid_workers(workOrder)
             .then(validWorkers => {
                 // Assuming there is at least one valid worker.
@@ -129,9 +126,23 @@ module.exports = {
                 // console.log("RETURNING CANDIDATE: ", candidate);
                 // console.log("PUSHING WORKORDER: ", workOrder);
                 candidate.queue.push(workOrder);
+                console.log("first i get here")
                 candidate.hoursLeft += workOrder.hours;
-                candidate.queue = 
-                candidate.queue.slice(1).sort((a, b) => { return a.priority - b.priority }).unshift(candidate.queue[0]);
+                console.log("i get here")
+                var first = candidate.queue[0]
+                console.log(first)
+                var something = candidate.queue.slice(1)
+                console.log(something)
+                something.sort((a, b) => { return a.priority - b.priority })
+                console.log(something)
+                something.unshift(first)
+                console.log("i got here!")
+                candidate.queue = (
+                    candidate.queue.length > 1 
+                    ? something
+                    : candidate.queue
+                );
+                console.log("i also get here")
                 return candidate;
             })
             .catch(err => console.log(err));

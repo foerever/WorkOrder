@@ -29,6 +29,100 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
+const optimize = async (workOrder) => {
+    let optimal_worker = await optimization.selectOptimalWorker(workOrder);
+    optimal_worker.save();
+
+    client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440')
+    .executions
+    .list({
+        contactChannelAddress: '+' + optimal_worker.phone_number.toString(),
+        limit: 1
+    }).then(function (executions) {
+        // console.log("found exe: " + executions.forEach(e => console.log(e.sid)));
+        if (executions.length > 0) {
+            console.log("after filtering, now about to remove: " + executions[0].sid)
+            client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440')
+                .executions(executions[0].sid)
+                .remove()
+                .then(execution =>
+                    // create a new flow with this number
+                    client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440').executions
+                        .create({
+                            to: '+' + optimal_worker.phone_number.toString(), from: '+14422640841',
+                            parameters: JSON.stringify({
+                                id: workOrder._id, location: workOrder.facility,
+                                time: workOrder.hours
+                            })
+                        })
+                        .then(function (execution) { console.log("created: " + execution.sid); }));
+        }
+        // no current execution, just make it
+        else {
+            // create a new flow with this number
+            client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440').executions
+                .create({
+                    to: '+' + optimal_worker.phone_number.toString(), from: '+14422640841',
+                    parameters: JSON.stringify({
+                        id: workOrder._id, location: workOrder.facility,
+                        time: workOrder.hours
+                    })
+                })
+                .then(function (execution) { console.log("created: " + execution.sid); });
+        }
+    });
+
+
+
+    // optimization.selectOptimalWorker(workOrder)
+    //     .then(candidate => {
+    //         Worker.update({ phone_number: candidate.phone_number }, { queue: candidate.queue }, (err, doc) => {
+    //             console.log(candidate);
+
+    //             client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440')
+    //             .executions
+    //             .list({
+    //                 contactChannelAddress: '+' + candidate.phone_number.toString(),
+    //                 limit: 1
+    //             }).then(function (executions) {
+    //                 // console.log("found exe: " + executions.forEach(e => console.log(e.sid)));
+    //                 if (executions.length > 0) {
+    //                     console.log("after filtering, now about to remove: " + executions[0].sid)
+    //                     client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440')
+    //                         .executions(executions[0].sid)
+    //                         .remove()
+    //                         .then(execution =>
+    //                             // create a new flow with this number
+    //                             client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440').executions
+    //                                 .create({
+    //                                     to: '+' + candidate.phone_number.toString(), from: '+14422640841',
+    //                                     parameters: JSON.stringify({
+    //                                         id: workOrder._id, location: workOrder.facility,
+    //                                         time: workOrder.hours
+    //                                     })
+    //                                 })
+    //                                 .then(function (execution) { console.log("created: " + execution.sid); }));
+    //                 }
+    //                 // no current execution, just make it
+    //                 else {
+    //                     // create a new flow with this number
+    //                     client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440').executions
+    //                         .create({
+    //                             to: '+' + candidate.phone_number.toString(), from: '+14422640841',
+    //                             parameters: JSON.stringify({
+    //                                 id: workOrder._id, location: workOrder.facility,
+    //                                 time: workOrder.hours
+    //                             })
+    //                         })
+    //                         .then(function (execution) { console.log("created: " + execution.sid); });
+    //                 }
+    //             });
+    //     });
+    //         // doc.save();
+    // })
+    // .catch(err => console.log(err));
+}
+
 // GETs
 app.get('/workorders', (req, res) => {
     WorkOrder.find({
@@ -81,78 +175,7 @@ app.post('/workorder_submission', async function (req, res, next) {
         hours: req.body.hours
     });
     workOrder.save();
-
-    //  optimization code off until now so we don't dirty our data
-
-    optimization.selectOptimalWorker(workOrder)
-        .then(candidate => {
-            Worker.update({ phone_number: candidate.phone_number }, { queue: candidate.queue }, (err, doc) => {
-                console.log(candidate);
-            });
-            // doc.save();
-        })
-        .catch(err => console.log(err));
-
-    // this will eventually be replaced by the optimization algorithm
-    // var optimal_worker = await Worker.findOne({ phone_number: optimization.selectOptimalWorker(workOrder) })
-    // optimal_worker.queue.push(workOrder._id)
-    // optimal_worker.save()
-
-    var optimal_worker = await Worker.findOne({ phone_number: 19492957381 });
-    // TODO: error catch optimal worker
-
-    console.log("optimal_worker: " + optimal_worker.name);
-    // optimal_worker.queue.push(workOrder);
-    // optimal_worker.save()
-    // TODO: make sure to add the hours onto hoursLeft
-
-    console.log("date now: " + new Date(Date.now()));
-    console.log("date made: " + new Date(Date.UTC(2019, 9, 20, 0, 0, 0)));
-
-    console.log("contactChannelAddress: " + '+' + optimal_worker.phone_number.toString());
-
-    // see if there is current execution and remove it
-    client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440')
-        .executions
-        .list({
-            contactChannelAddress: '+' + optimal_worker.phone_number.toString(),
-            limit: 1
-        }).then(function (executions) {
-            // console.log("found exe: " + executions.forEach(e => console.log(e.sid)));
-            if (executions.length > 0) {
-                console.log("after filtering, now about to remove: " + executions[0].sid)
-                client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440')
-                    .executions(executions[0].sid)
-                    .remove()
-                    .then(execution =>
-                        // create a new flow with this number
-                        client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440').executions
-                            .create({
-                                to: '+' + optimal_worker.phone_number.toString(), from: '+14422640841',
-                                parameters: JSON.stringify({
-                                    id: workOrder._id, location: workOrder.facility,
-                                    time: workOrder.hours
-                                })
-                            })
-                            .then(function (execution) { console.log("created: " + execution.sid); }));
-            }
-            // no current execution, just make it
-            else {
-                // create a new flow with this number
-                client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440').executions
-                    .create({
-                        to: '+' + optimal_worker.phone_number.toString(), from: '+14422640841',
-                        parameters: JSON.stringify({
-                            id: workOrder._id, location: workOrder.facility,
-                            time: workOrder.hours
-                        })
-                    })
-                    .then(function (execution) { console.log("created: " + execution.sid); });
-            }
-
-        });
-
-    // need to eventually find a different page for this to go to
+    optimize(workOrder);
     res.status(200).send("thanks for submitting a work order :)")
 })
 
@@ -233,8 +256,8 @@ app.get('/getWorkerMarkers', (req, ress) => {
                                 // console.log('hihihi')
                                 let coordinates = res[allFacilityIds.indexOf(curFacility.facility)].location.coordinates;
                                 //  offset so that the facility is still visible
-                                coordinates[0] += 0.05;
-                                coordinates[1] += 0.05;
+                                coordinates[0] += 0.001;
+                                coordinates[1] += 0.001;
                                 coordinates.reverse();
                                 // console.log('Name: ', worker.name);
                                 markers.push({
@@ -289,6 +312,16 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function getRandomEquipmentType() {
+    arr = ["Pump", "Compressor", "Seperator", "Sensor", "Security", "Electricity", "Networking", "Vehicle", "HVAC", "Conveyer"]
+    var i = getRandomInt(0, arr.length - 1)
+    return arr[i]
+}
+
+function getRandom5() {
+    return getRandomInt(1,5)
+}
+
 function getRandomTimeStampPast24Hours() {
     var newDate = new Date();
     newDate.setHours(getRandomInt(1, 24));
@@ -336,6 +369,36 @@ app.post('/addErica', async (req, res) => {
     workerSignUp.save();
 })
 
+app.post('/addAnthony', async (req, res) => {
+    var workerSignUp = new Worker({
+        name: "Anthony",
+        phone_number: 17138288185,
+        certifications: "Networking",
+        shift: true,
+        queue: [],
+        state: 0,
+        hoursLeft: 0
+    });
+    workerSignUp.save();
+})
+
+app.post('/addRandomWorkOrder', async (req, res) => {
+    console.log("made it")
+    var workOrder = new WorkOrder({
+        name: "random name",
+        email: "random@email.com",
+        equipment_id: "random equipment id",
+        equipment_type: getRandomEquipmentType(),
+        priority: 1,
+        facility: "Fac" + getRandom5().toString(),
+        hours: 1,
+        createdAt: getRandomTimeStampPast24Hours()
+    });
+    workOrder.save();
+    optimize(workOrder);
+    res.status(200).send("thanks for submitting a work order :)")
+})
+
 app.post('/clear', async (req, res) => {
     console.log("Attempted to clear database!")
     Worker.collection.drop();
@@ -360,9 +423,6 @@ app.post('/update', async (req, res) => {
 
     console.log("update hit");
     const { phone_number, attribute, change, work_order_id } = req.body;
-    console.log("phone number: " + phone_number + " attribute: " + attribute + " change" + change + " work_order_id: "
-        + work_order_id
-    );
 
     var number = phone_number.substring(1);
 

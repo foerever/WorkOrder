@@ -18,7 +18,7 @@ var workerSchema = mongoose.Schema({
     certifications: {type:[String],default:["Default Certification"]},
     shift: {type:Boolean, default:false},
     queue: {type:[workOrderSchema], default:[]},
-    state: {type:Number, default:0},
+    state: Number,
     hoursLeft: {type:Number, default:0}
 });
 
