@@ -238,6 +238,26 @@ app.post('/status', async function (req, res, next) {
     res.status(200).send({ traveling: tech_after.traveling, num_queue: tech_after.queue.length, destination: tech_after.queue[0]})
 });
 
+app.post('/addErica', async (req, res) => {
+    var workerSignUp = new Worker({
+        name: "Erica",
+        phone_number: 19492957381,
+        certifications: "Security",
+        shift: true,
+        queue: [],
+        traveling: false,
+        hoursLeft: 0
+    });
+    workerSignUp.save();
+})
+
+app.post('/clear', async (req, res) => {
+    console.log("Attempted to clear database!")
+    Worker.collection.drop();
+    WorkOrder.collection.drop();
+    Facility.collection.drop();
+})
+
 // updates a technician's traveling status
 app.post('/update',  async (req, res) => {
 
