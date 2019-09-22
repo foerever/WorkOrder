@@ -1,8 +1,9 @@
 import React from 'react';
 import '../App.css';
 import axios from 'axios';
-import {Line, Bar } from 'react-chartjs-2';
-
+import { Line, Bar } from 'react-chartjs-2';
+import { Container, Row, Col, Navbar } from 'react-bootstrap';
+import logo from './graph_logo.png';
 class Metrics extends React.Component {
     constructor(props) {
         super(props);
@@ -19,7 +20,7 @@ class Metrics extends React.Component {
 
         function random_rgba() {
             var o = Math.round, r = Math.random, s = 255;
-            return 'rgba(' + o(r()*s) + ',' + o(r()*s) + ',' + o(r()*s) + ',' + r().toFixed(1) + ')';
+            return 'rgba(' + o(r() * s) + ',' + o(r() * s) + ',' + o(r() * s) + ',' + r().toFixed(1) + ')';
         }
 
         axios.get('http://localhost:8000/workers')
@@ -31,9 +32,9 @@ class Metrics extends React.Component {
                     barChartLabels.push(worker.name)
                     barChartValues.push(worker.queue.length)
                 }
-                this.setState({barChartLabels, barChartValues})
+                this.setState({ barChartLabels, barChartValues })
             })
-            .catch(function(error) {
+            .catch(function (error) {
                 console.log(error)
             })
 
@@ -56,9 +57,9 @@ class Metrics extends React.Component {
                     } else {
                         facility_counts[equipment_type] = 1
                     }
-                    
+
                     // only consider work orders for the past 24 hours
-                    if (d >= new Date(timeStampYesterday*1000).getTime()) {
+                    if (d >= new Date(timeStampYesterday * 1000).getTime()) {
                         // create a mapping of equipment types to frequency of use per hour
                         // for the past 24 hours
                         if (workorder.equipment_type in equipmentDict) {
@@ -77,30 +78,34 @@ class Metrics extends React.Component {
                 var lineChartDataSets = []
                 for (const [key, value] of Object.entries(equipmentDict)) {
                     var dataSet = {
-                        label:key,
-                        data:[],
+                        label: key,
+                        data: [],
                         borderColor: random_rgba()
                     }
-                    for (var i = 1; i < 25; i++) {
-                        if (i in value) {
-                            dataSet.data.push(value[i]);
+
+                    var curr = new Date().getHours();
+                    for (var i = 0; i < 24; i++) {
+                        curr = curr === 0 ? 24 : curr
+                        if (curr in value) {
+                            dataSet.data.unshift(value[curr]);
                         } else {
-                            dataSet.data.push(0);
+                            dataSet.data.unshift(0);
                         }
+                        curr = curr - 1 === 0 ? 24 : curr - 1 
                     }
                     lineChartDataSets.push(dataSet);
                 }
-                
+
                 var facilityCountsLabels = []
                 var facilityCountsValues = []
                 for (const [key, value] of Object.entries(facility_counts)) {
                     facilityCountsLabels.push(key);
                     facilityCountsValues.push(value);
                 }
-                this.setState({lineChartDataSets, facilityCountsLabels, facilityCountsValues})
+                this.setState({ lineChartDataSets, facilityCountsLabels, facilityCountsValues })
 
             })
-            .catch(function(error) {
+            .catch(function (error) {
                 console.log(error)
             })
     }
@@ -109,9 +114,9 @@ class Metrics extends React.Component {
 
         function random_rgba() {
             var o = Math.round, r = Math.random, s = 255;
-            return 'rgba(' + o(r()*s) + ',' + o(r()*s) + ',' + o(r()*s) + ',' + r().toFixed(1) + ')';
+            return 'rgba(' + o(r() * s) + ',' + o(r() * s) + ',' + o(r() * s) + ',' + r().toFixed(1) + ')';
         }
-        
+
         var barChartColor = random_rgba();
         var barChartData = {
             labels: this.state.barChartLabels,
@@ -129,7 +134,7 @@ class Metrics extends React.Component {
         for (var i = 0; i < 24; i++) {
             curr = curr === 0 ? 24 : curr
             arr.unshift(curr)
-            curr = curr -1 === 0 ? 24 : curr - 1 
+            curr = curr - 1 === 0 ? 24 : curr - 1 
         }
 
         var lineChartData = {
@@ -154,22 +159,49 @@ class Metrics extends React.Component {
         }
 
         return (
-            <div>
-                <div style={barStyle}>
-                    <h2>Hourly Frequency of Work Order per Equipment Type</h2>
-                    <Line data={lineChartData}/>
-                </div>
+            <Container>
+                <Row>
+                    <Col>
+                        <Navbar bg="light">
+                            <Navbar.Brand>
+                                <img
+                                    src={logo}
+                                    width="30"
+                                    height="30"
+                                    className="d-inline-block align-top"
+                                    alt="React Bootstrap logo" /> Hourly Frequency of Work Order per Equipment Type</Navbar.Brand>
+                        </Navbar>
+                        <Line data={lineChartData} />
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        <Navbar bg="light">
+                            <Navbar.Brand>
+                                <img
+                                    src={logo}
+                                    width="30"
+                                    height="30"
+                                    className="d-inline-block align-top"
+                                    alt="React Bootstrap logo" /> Queue Length per Technician</Navbar.Brand>
+                        </Navbar>
+                        <Bar data={barChartData} />
 
-                <div style={barStyle}>
-                    <h2>Queue Length per Technician</h2>
-                    <Bar data={barChartData}/>
-                </div>
-
-                <div style={barStyle}>
-                    <h2>Number of Work Orders per Facility</h2>
-                    <Bar data={facilityCountsData}/>
-                </div>            
-            </div>
+                    </Col>
+                    <Col>
+                        <Navbar bg="light">
+                            <Navbar.Brand>
+                                <img
+                                    src={logo}
+                                    width="30"
+                                    height="30"
+                                    className="d-inline-block align-top"
+                                    alt="React Bootstrap logo" /> Number of Work Orders per Facility</Navbar.Brand>
+                        </Navbar>
+                        <Bar data={facilityCountsData} />
+                    </Col>
+                </Row>
+            </Container>
         );
     }
 }

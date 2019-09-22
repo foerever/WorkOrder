@@ -3,6 +3,7 @@ var models = require('./models.js');
 var WorkOrder = models.WorkOrder;
 var Worker = models.Worker;
 var Facility = models.Facility;
+var mathjs = require('mathjs');
 
 function degreesToRadians(degrees) {
     return degrees * Math.PI / 180;
@@ -13,22 +14,26 @@ mongoose.connect(require('./connection.js'));
 // Query the facility table to get facility of a given work order
 // Return target_facility cursor with latitude and longitude info
 const find_fac = async (order) => {
-    var target_facility = await Facility.find({ facilityId: order.facilityId }, function (err, doc) {
+    var target_facility = await Facility.find({ facility: order.facility }, function (err, doc) {
         if (err) {
             throw "error";
         } else {
-            return doc.where('name').equals(order.facilityId);
+            return doc;
         }
-    });
+    }).where('name').equals(order.facility);
     return target_facility;
 }
 
 // Calculate the predicted drive time between two facilities assuming avg driving speed is 30km/h
 // parameter: the two facility cursors queried from facility table
 // Returns hours of drive time between two facilities
-const getPredictedTime = (target_facility1, target_facility2) => {
+const getDirectDistance = (target_facility1, target_facility2) => {
 
-    //  ERROR: queue is empty
+    //  ERROR: queue is empty, no facility
+    if (target_facility1 === 0) {
+        return 0;
+    }
+
     lat1 = target_facility1.latitude;
     lat2 = target_facility2.latitude;
     lng1 = target_facility1.longitude;
@@ -43,38 +48,30 @@ const getPredictedTime = (target_facility1, target_facility2) => {
         Math.pow(Math.sin(dLong / 2), 2);
     let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     let distance = radiusEarth * c;
-    return distance / 30;
+    return distance;
 }
 
 // Find a Worker from the Worker schema that can take the order
 const find_valid_workers = async (order) => {
     // console.log("\n\n\n\n ORDER: ", order.name);
-    let curTime = new Date().getTime();
     // const temp = order.equipment_type;
     var valid_workers = await Worker.find({}, function (err, doc) {
         if (err) {
             throw "error";
         } else {
-
-
             // 6 - 12
             // 12 - 18
-            let curHour = new Date().getHours();
-
-            doc = doc.filter(worker => {
-                const shiftEnd = worker.shift === 'AM' ? 12 : 18;
-                const shiftStart = worker.shift === 'AM' ? 6 : 12;
-                // console.log(worker)
-                return worker.certifications.includes(order.equipment_type) && order.hours + curHour < shiftEnd &&
-                    curTime > shiftStart;
-            });
-
+            // console.log("doc", doc);
+            return doc;
         }
-    })
-    return valid_workers;
-    // .where(order.equipment_type).in('certifications')
-    // .where(hoursToMs(order.hours) + curTime > doc.shiftEnd && curTime < doc.shiftStart);
-    // return valid_workers;
+    });
+    
+    console.log("valid_workers ", valid_workers.map(x => x).filter(worker => {
+        return worker.certifications.includes(order.equipment_type);
+    }));
+    return valid_workers.map(x => x).filter(worker => {
+        return worker.certifications.includes(order.equipment_type);
+    });
 }
 
 // // Function that switches the latest order with the new order if priority of new order is higher && same fac
@@ -91,53 +88,54 @@ module.exports = {
     selectOptimalWorker: function (workOrder) {
         return find_valid_workers(workOrder)
             .then(validWorkers => {
-                let hours = 0;
-                // console.log('validWorkers ', validWorkers);
                 let candidate = validWorkers[0];
+                
+                // We are optimizing by summing the z-score of two important attributes: 
+                // location between each technician and the facility where the new order is, 
+                // and the number of hours left before the end of each technician's shift.
+                console.log("validWorkers: ", validWorkers[0].queue);
 
-                for (let person of validWorkers) {
-                    // console.log("queue: ", person.queue);
-                    // console.log("workOrder: ", workOrder)
-                    if (person.queue.length === 0) {
-                        candidate = person;
-                        break;
-                    } else {
-                        find_fac(person.queue[0])
-                            .then(res1 => {
-                                find_fac(workOrder)
-                                    .then(res2 => {
-                                        if (getPredictedTime(res1, res2) < 1) {
-                                            // Look for person with the maximum hours Left
-                                            if (hours < person.hoursLeft) {
-                                                hours = person.hoursLeft
-                                                candidate = person;
-                                            }
-                                        }
-                                    });
-                            });
-                        // console.log('PERESON: ', person);
-                        // Check to see if predicted drive time between current and order facility exceeds one hour
-                        if (getPredictedTime(find_fac(person.queue[0]), find_fac(workOrder)) < 1) {
-                            // Look for person with the maximum hours Left
-                            if (hours < person.hoursLeft) {
-                                hours = person.hoursLeft
-                                candidate = person;
-                            }
-                        }
-                    }
+                let distance_list = validWorkers.map(x => 
+                    (x.queue.length === 0 ? 0 : find_fac(x.queue[0])))
+                    .map(x => getDirectDistance(x, find_fac(workOrder)));
+                console.log("distance_list: ", distance_list);
 
+                let mean_dist = mathjs.mean(distance_list);
+                let stdev_dist = mathjs.std(distance_list);
+                let z_score_dist;
+                if (stdev_dist === 0) {
+                    z_score_dist = distance_list.map(x => 0);
+                } else {
+                    z_score_dist = distance_list.map(x => (x - mean_dist) / stdev_dist);
                 }
+                console.log("z_score_dist: ", z_score_dist);
+
+                let hour_list = validWorkers.map(x => x.hoursLeft);
+                console.log("hour_list: ", hour_list);
+                let mean_hour = mathjs.mean(hour_list);
+                let stdev_hour = mathjs.std(hour_list);
+                let z_score_hour = hour_list.map(x => (x - mean_hour) / stdev_hour);
+
+                let z_score_list = z_score_dist.map((a, idx) => a + z_score_hour[idx]);
+                
+                let index_min = z_score_list.indexOf(Math.min(z_score_list));
+                console.log(index_min);
+                if (index_min > 0) {
+                    candidate = validWorkers[index_min];
+                }
+                console.log("candidate ", candidate);
+                
                 // console.log("RETURNING CANDIDATE: ", candidate);
                 // console.log("PUSHING WORKORDER: ", workOrder);
                 candidate.queue.push(workOrder);
+                candidate.hoursLeft += workOrder.hours;
                 candidate.traveling ? candidate.queue.sort((a, b) => { return a.priority - b.priority }) :
                     candidate.queue.slice(1).sort((a, b) => { return a.priority - b.priority });
                 return candidate;
             })
             .catch(err => console.log(err));
-
-    },
-
+        }
+    }
     // sortAddOrder: async function (candidate, workOrder) {
     //     console.log("CANDIATE: ", candidate);
     //     candidate.then(res => {
@@ -153,4 +151,3 @@ module.exports = {
     //     candidate.queue.slice(1).sort((a, b) => { return a.priority - b.priority });
     // return candidate.phone_number;
     // }
-};

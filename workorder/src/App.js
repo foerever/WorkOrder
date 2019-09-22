@@ -21,9 +21,9 @@ class App extends React.Component {
   render() {
     return (
       <div className="App">
-        <Navbar bg="light" expand="lg">
+        <Navbar bg="light" >
           <img style={{ height: '100%', width: '2em', marginRight: '0.5em' }} alt="logo" src={logo} />
-          
+
           <Navbar.Brand href="#home">Chevron | WorkOrders</Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Nav.Link onClick={() => this.navigate('home')}>Home</Nav.Link>
@@ -37,8 +37,8 @@ class App extends React.Component {
           : (this.state.route === 'technician'
             ? <TechnicianForm />
             : (this.state.route === 'metrics'
-              ? <Metrics/>
-              : <Demo/>
+              ? <Metrics />
+              : <Demo />
             ))}
       </div>
     );
