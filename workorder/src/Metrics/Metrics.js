@@ -9,12 +9,16 @@ class Metrics extends React.Component {
         this.state = {
             barChartLabels: [],
             barChartValues: [],
-            lineChartCoords: [],
-            lineChartX: []
+            lineChartDataSets: []
         }
     }
 
     componentWillMount() {
+
+        function random_rgba() {
+            var o = Math.round, r = Math.random, s = 255;
+            return 'rgba(' + o(r()*s) + ',' + o(r()*s) + ',' + o(r()*s) + ',' + r().toFixed(1) + ')';
+        }
 
         axios.get('http://localhost:8000/workers')
             .then(res => {
@@ -34,16 +38,48 @@ class Metrics extends React.Component {
         axios.get('http://localhost:8000/workorders')
             .then(res => {
                 // build the array for the line chart data
-                var lineChartCoords = []
-                var x_axis = new Set()
+                var equipmentDict = {};
                 for (let workorder of res.data) {
                     var d = new Date(workorder.createdAt);
-                    lineChartCoords.push({x:d, y:d.getHours()})
-                    x_axis.add(d)
+                    var hour = d.getHours();
+
+                    var timeStamp = Math.round(new Date().getTime() / 1000);
+                    var timeStampYesterday = timeStamp - (24 * 3600);
+                    
+                    // only consider work orders for the past 24 hours
+                    if (d >= new Date(timeStampYesterday*1000).getTime()) {
+                        // create a mapping of equipment types to frequency of use per hour
+                        // for the past 24 hours
+                        if (workorder.equipment_type in equipmentDict) {
+                            if (hour in equipmentDict[workorder.equipment_type]) {
+                                equipmentDict[workorder.equipment_type][hour] += 1
+                            } else {
+                                equipmentDict[workorder.equipment_type][hour] = 1
+                            }
+                        } else {
+                            var new_dict = {}
+                            new_dict[hour] = 1
+                            equipmentDict[workorder.equipment_type] = new_dict
+                        }
+                    }
                 }
-                var lineChartX = Array.from(x_axis)
-                console.log(lineChartCoords)
-                this.setState({lineChartCoords, lineChartX})
+                var lineChartDataSets = []
+                for (const [key, value] of Object.entries(equipmentDict)) {
+                    var dataSet = {
+                        label:key,
+                        data:[],
+                        borderColor: random_rgba()
+                    }
+                    for (var i = 1; i < 25; i++) {
+                        if (i in value) {
+                            dataSet.data.push(value[i]);
+                        } else {
+                            dataSet.data.push(0);
+                        }
+                    }
+                    lineChartDataSets.push(dataSet);
+                }
+                this.setState({lineChartDataSets})
 
             })
             .catch(function(error) {
@@ -62,12 +98,17 @@ class Metrics extends React.Component {
             }]
         }
 
+        var arr = []
+        var curr = new Date().getHours();
+
+        for (var i = 0; i < 24; i++) {
+            arr.unshift(curr)
+            curr = curr -1 == 0 ? 24 : curr - 1 
+        }
+
         var lineChartData = {
-            labels: this.state.lineChartX,
-            datasets: [{
-                label: "Work Order Requests per Hour",
-                data: this.state.lineChartCoords
-            }]
+            labels: arr,
+            datasets: this.state.lineChartDataSets
         }
 
         var barStyle = {
@@ -76,8 +117,15 @@ class Metrics extends React.Component {
 
         return (
             <div>
-                <div style={barStyle}><Bar data={barChartData}/></div>
-                <Line data={lineChartData}/>
+                <div style={barStyle}>
+                    <h2>Hourly Frequency of Work Order per Equipment Type</h2>
+                    <Line data={lineChartData}/>
+                </div>
+
+                <div style={barStyle}>
+                    <h2>Queue Length per Technician</h2>
+                    <Bar data={barChartData}/>
+                </div>
             </div>
         );
     }
