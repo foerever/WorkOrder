@@ -81,7 +81,7 @@ class TechnicianForm extends React.Component {
                             </Form.Control>
                         </Form.Group>
 
-                        <Button variant="primary" type="submit" onClick={click => this.onSubmit()}>
+                        <Button variant="primary" onClick={click => this.onSubmit()}>
                             Submit
             </Button>
                     </Form>

@@ -43,6 +43,7 @@ class OrderSubmissionForm extends React.Component {
                         <Form>
                             <Form.Label>Name</Form.Label>
                             <Form.Control
+                                size="sm"
                                 name='name'
                                 onChange={this.handleChange}
                                 placeholder="First and last name" />
@@ -50,6 +51,7 @@ class OrderSubmissionForm extends React.Component {
                             <Form.Group controlId="formBasicEmail">
                                 <Form.Label>Email address</Form.Label>
                                 <Form.Control
+                                    size="sm"
                                     onChange={this.handleChange}
                                     name='email'
                                     type="email" placeholder="Enter email" />
@@ -58,6 +60,7 @@ class OrderSubmissionForm extends React.Component {
 
                             <Form.Label>Equipment ID</Form.Label>
                             <Form.Control
+                                size="sm"
                                 onChange={this.handleChange}
                                 name='equipmentId'
                                 placeholder="Equipment ID" />
@@ -65,6 +68,7 @@ class OrderSubmissionForm extends React.Component {
 
                             <Form.Label>Equipment Type</Form.Label>
                             <Form.Control
+                                size="sm"
                                 onChange={this.handleChange}
                                 name='equipmentType'
                                 placeholder="Equipment Type" />
@@ -73,6 +77,7 @@ class OrderSubmissionForm extends React.Component {
                             <Form.Group controlId="exampleForm.ControlSelect1">
                                 <Form.Label>Priority</Form.Label>
                                 <Form.Control as="select"
+                                    size="sm"
                                     name='priority'
                                     onChange={this.handleChange}
                                 >
@@ -87,17 +92,19 @@ class OrderSubmissionForm extends React.Component {
 
                             <Form.Label>Facility</Form.Label>
                             <Form.Control placeholder="Facility ID"
+                                size="sm"
                                 name='facilityId'
                                 onChange={this.handleChange} />
                             <br />
 
                             <Form.Label>Completion Time</Form.Label>
                             <Form.Control placeholder="Completion Time"
+                                size="sm"
                                 name='completionTime'
                                 onChange={this.handleChange} />
                             <br />
 
-                            <Button variant="primary" type="submit" onClick={click => this.onSubmit()}>
+                            <Button variant="primary" onClick={click => this.onSubmit()}>
                                 Submit
                             </Button>
                         </Form>
