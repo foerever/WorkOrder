@@ -63,10 +63,10 @@ const find_valid_workers = async (order) => {
                 let curHour = new Date().getHours();
                 const shiftEnd = worker.shift === true ? 12 : 24;
                 const shiftStart = worker.shift === true ? 1 : 12;
-                // console.log("AM", worker.shift);
-                // console.log(order.hours, "curhour", curHour);
-                // console.log(shiftStart, shiftEnd);
-                // console.log("Is this true? ", order.hours + curHour < shiftEnd && curHour > shiftStart);
+                console.log("AM", worker.shift);
+                console.log(order.hours, "curhour", curHour);
+                console.log(shiftStart, shiftEnd);
+                console.log("Is this true? ", order.hours + curHour < shiftEnd && curHour > shiftStart);
                 return worker.certifications.includes(order.equipment_type) && order.hours + curHour < shiftEnd &&
                     curHour > shiftStart;
             });

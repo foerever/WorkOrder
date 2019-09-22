@@ -78,35 +78,35 @@ app.post('/workorder_submission', async function (req, res, next) {
 
     //  optimization code off until now so we don't dirty our data
 
-    // optimization.selectOptimalWorker(workOrder)
-    //     .then(candidate => {
-    //         Worker.update({ phone_number: candidate.phone_number }, { queue: candidate.queue }, (err, doc) => {
-    //             console.log(doc.n, doc.nModified)
-    //         });
-    //         // doc.save();
-    //     })
-    //     .catch(err => console.log(err));
+    optimization.selectOptimalWorker(workOrder)
+        .then(candidate => {
+            Worker.update({ phone_number: candidate.phone_number }, { queue: candidate.queue }, (err, doc) => {
+                console.log(candidate);
+            });
+            // doc.save();
+        })
+        .catch(err => console.log(err));
 
     // this will eventually be replaced by the optimization algorithm
     // var optimal_worker = await Worker.findOne({ phone_number: optimization.selectOptimalWorker(workOrder) })
     // optimal_worker.queue.push(workOrder._id)
     // optimal_worker.save()
 
-    var optimal_worker = await Worker.findOne({ phone_number: 19492957381 });
+    // var optimal_worker = await Worker.findOne({ phone_number: 19492957381 });
 
-    console.log("optimal_worker: " + optimal_worker);
-    optimal_worker.queue.push(workOrder._id)
-    optimal_worker.save()
+    // console.log("optimal_worker: " + optimal_worker);
+    // optimal_worker.queue.push(workOrder._id)
+    // optimal_worker.save()
 
-    client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440').executions
-        .create({
-            to: '+' + optimal_worker.phone_number.toString(), from: '+14422640841',
-            parameters: JSON.stringify({
-                id: workOrder._id, location: workOrder.facility,
-                time: workOrder.hours.toString()
-            })
-        })
-        .then(function (execution) { console.log(execution.sid); });
+    // client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440').executions
+    //     .create({
+    //         to: '+' + optimal_worker.phone_number.toString(), from: '+14422640841',
+    //         parameters: JSON.stringify({
+    //             id: workOrder._id, location: workOrder.facility,
+    //             time: workOrder.hours.toString()
+    //         })
+    //     })
+    //     .then(function (execution) { console.log(execution.sid); });
 
     // need to eventually find a different page for this to go to
     res.status(200).send("thanks for submitting a work order :)")
