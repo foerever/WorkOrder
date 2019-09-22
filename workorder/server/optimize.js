@@ -135,7 +135,7 @@ module.exports = {
                 console.log(something)
                 something.sort((a, b) => { return a.priority - b.priority })
                 console.log(something)
-                something.unshift(first)
+                something.push(first)
                 console.log("i got here!")
                 candidate.queue = (
                     candidate.queue.length > 1 
