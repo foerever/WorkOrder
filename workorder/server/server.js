@@ -238,10 +238,10 @@ app.post('/status', async function (req, res, next) {
 
     var tech_after = (await Worker.findOne({ phone_number: number }));
 
-    console.log("traveling? " + tech_after.traveling);
+    console.log("state " + tech_after.state);
     console.log("next ticket: " + tech_after.queue[0]);
     console.log("num in the queue: " + tech_after.queue.length);
-    res.status(200).send({ traveling: tech_after.traveling, num_queue: tech_after.queue.length, destination: tech_after.queue[0] })
+    res.status(200).send({ state: tech_after.state, num_queue: tech_after.queue.length, destination: tech_after.queue[0]})
 });
 
 app.post('/addErica', async (req, res) => {
@@ -251,7 +251,7 @@ app.post('/addErica', async (req, res) => {
         certifications: "Security",
         shift: true,
         queue: [],
-        traveling: false,
+        state: 0,
         hoursLeft: 0
     });
     workerSignUp.save();
@@ -267,6 +267,7 @@ app.post('/clear', async (req, res) => {
 app.post('/clearDB', async (req, res) => {
     console.log("Attempted to clear workers database!")
     const { input } = req.body
+
     if (input === 0)
         Worker.collection.drop();
     else if (input === 1)
