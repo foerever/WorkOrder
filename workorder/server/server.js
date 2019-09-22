@@ -226,7 +226,7 @@ app.get('/populateFacilities/:num', (req, res) => {
             facilityId: `Facility ${i + 1}`,
             location: {
                 type: 'Point',
-                coordinates: [getRandomNum(-94.1266, -106.4850), getRandomNum(27.8006, 33.9137)]
+                coordinates: [getRandomNum(-74.0060, -122.3321), getRandomNum(29.3013, 47.6062)]
             }
         })
     }

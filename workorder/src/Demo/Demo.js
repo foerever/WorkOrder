@@ -16,7 +16,8 @@ class Demo extends React.Component {
             sample: false,
             sample_workers: false,
             sample_work_order: false,
-            sample_facilities: false
+            sample_facilities: false,
+            random_facilities: false
         }
     }
 
@@ -63,16 +64,25 @@ class Demo extends React.Component {
         axios.post('http://localhost:8000/addSampleData', {type: db})
     }
 
+    addRandomFacilities(numFacilities) {
+        this.setState({random_facilities: true})
+        axios.get('http://localhost:8000/populateFacilities/' + numFacilities.toString())
+    }
+
     render() {
 
         var spaceStyle = {
             marginLeft: 20
         }
 
+        var topStyle = {
+            marginTop: 50
+        }
+
         return (
             <div>
                 <h1>DEMO</h1>
-                <h2>Clear DB</h2>
+                <h2 style={topStyle}>Clear DB</h2>
                 <Button style={spaceStyle} variant="dark" disabled={this.state.clear} onClick={click => this.onClear()}>
                     Clear DB
                 </Button>
@@ -89,7 +99,7 @@ class Demo extends React.Component {
                     Clear Facility DB
                 </Button>
 
-                <h2>Add sample data</h2>
+                <h2 style={topStyle}>Add sample data</h2>
                 <Button style={spaceStyle} variant="dark" disabled={this.state.sample} onClick={click => this.addSampleData(3)}>
                     Add All Sample Data
                 </Button>
@@ -106,7 +116,7 @@ class Demo extends React.Component {
                     Add Sample Facilities
                 </Button>
 
-                <h2>Simple Tests</h2>
+                <h2 style={topStyle}>Simple Tests</h2>
                 <Button style={spaceStyle} variant="dark" disabled={this.state.erica} onClick={click => this.addErica()}>
                     Add Erica
                 </Button>
@@ -117,6 +127,10 @@ class Demo extends React.Component {
 
                 <Button style={spaceStyle} variant="dark" onClick={click => this.addRandom()}>
                     Add Random Work Order
+                </Button>
+
+                <Button style={spaceStyle} variant="dark" disabled={this.state.random_facilities} onClick={click => this.addRandomFacilities(1000)}>
+                    Add 1000 Random Facilities
                 </Button>
             </div>
         )
