@@ -1,7 +1,7 @@
 import React from 'react';
 import '../App.css';
 import axios from 'axios';
-import { Line, Bar } from 'react-chartjs-2';
+import {Line, Bar } from 'react-chartjs-2';
 
 class Metrics extends React.Component {
     constructor(props) {
@@ -9,7 +9,9 @@ class Metrics extends React.Component {
         this.state = {
             barChartLabels: [],
             barChartValues: [],
-            lineChartDataSets: []
+            lineChartDataSets: [],
+            facilityCountsLabels: [],
+            facilityCountsValues: []
         }
     }
 
@@ -39,12 +41,21 @@ class Metrics extends React.Component {
             .then(res => {
                 // build the array for the line chart data
                 var equipmentDict = {};
+                // get a count of work orders per facility
+                var facility_counts = {};
                 for (let workorder of res.data) {
                     var d = new Date(workorder.createdAt);
                     var hour = d.getHours();
 
                     var timeStamp = Math.round(new Date().getTime() / 1000);
                     var timeStampYesterday = timeStamp - (24 * 3600);
+
+                    var equipment_type = workorder.equipment_type;
+                    if (equipment_type in facility_counts) {
+                        facility_counts[equipment_type] += 1
+                    } else {
+                        facility_counts[equipment_type] = 1
+                    }
                     
                     // only consider work orders for the past 24 hours
                     if (d >= new Date(timeStampYesterday*1000).getTime()) {
@@ -79,7 +90,14 @@ class Metrics extends React.Component {
                     }
                     lineChartDataSets.push(dataSet);
                 }
-                this.setState({lineChartDataSets})
+                
+                var facilityCountsLabels = []
+                var facilityCountsValues = []
+                for (const [key, value] of Object.entries(facility_counts)) {
+                    facilityCountsLabels.push(key);
+                    facilityCountsValues.push(value);
+                }
+                this.setState({lineChartDataSets, facilityCountsLabels, facilityCountsValues})
 
             })
             .catch(function(error) {
@@ -88,12 +106,19 @@ class Metrics extends React.Component {
     }
 
     render() {
+
+        function random_rgba() {
+            var o = Math.round, r = Math.random, s = 255;
+            return 'rgba(' + o(r()*s) + ',' + o(r()*s) + ',' + o(r()*s) + ',' + r().toFixed(1) + ')';
+        }
+        
+        var barChartColor = random_rgba();
         var barChartData = {
             labels: this.state.barChartLabels,
             datasets: [{
                 label: "Queue Length per Technician",
-                backgroundColor: 'rgb(255, 99, 132)',
-                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: barChartColor,
+                borderColor: barChartColor,
                 data: this.state.barChartValues
             }]
         }
@@ -102,8 +127,9 @@ class Metrics extends React.Component {
         var curr = new Date().getHours();
 
         for (var i = 0; i < 24; i++) {
+            curr = curr === 0 ? 24 : curr
             arr.unshift(curr)
-            curr = curr -1 == 0 ? 24 : curr - 1 
+            curr = curr -1 === 0 ? 24 : curr - 1 
         }
 
         var lineChartData = {
@@ -113,6 +139,18 @@ class Metrics extends React.Component {
 
         var barStyle = {
             width: 800
+        }
+
+        var facilityColor = random_rgba();
+
+        var facilityCountsData = {
+            labels: this.state.facilityCountsLabels,
+            datasets: [{
+                label: "Number of Work Orders per Facility",
+                backgroundColor: facilityColor,
+                borderColor: facilityColor,
+                data: this.state.barChartValues
+            }]
         }
 
         return (
@@ -126,6 +164,11 @@ class Metrics extends React.Component {
                     <h2>Queue Length per Technician</h2>
                     <Bar data={barChartData}/>
                 </div>
+
+                <div style={barStyle}>
+                    <h2>Number of Work Orders per Facility</h2>
+                    <Bar data={facilityCountsData}/>
+                </div>            
             </div>
         );
     }
