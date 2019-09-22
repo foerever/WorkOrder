@@ -100,15 +100,18 @@ app.post('/workorder_submission', async function (req, res, next) {
     var optimal_worker = await Worker.findOne({ phone_number: 19492957381 });
 
     console.log("optimal_worker: " + optimal_worker.name);
-    optimal_worker.queue.push(workOrder._id)
+    optimal_worker.queue.push(workOrder)
     optimal_worker.save()
 
     client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440').executions
-        .create({ to: '+' + optimal_worker.phone_number.toString(), from: '+14422640841',
-            parameters: JSON.stringify({ id: workOrder._id, location: workOrder.facility,
-                                                time: workOrder.hours
-            })})
-        .then(function(execution) { console.log(execution.sid); });
+        .create({
+            to: '+' + optimal_worker.phone_number.toString(), from: '+14422640841',
+            parameters: JSON.stringify({
+                id: workOrder._id, location: workOrder.facility,
+                time: workOrder.hours
+            })
+        })
+        .then(function (execution) { console.log(execution.sid); });
 
     // need to eventually find a different page for this to go to
     res.status(200).send("thanks for submitting a work order :)")
@@ -176,7 +179,7 @@ app.get('/getWorkerMarkers', (req, ress) => {
         .then(res => {
 
             const allFacilityIds = res.map(facility => facility.facilityId);
-            console.log('All Facility ids', allFacilityIds, res);
+            // console.log('All Facility ids', allFacilityIds, res);
             Worker.find({})
                 .then(res2 => {
                     let markers = [];
@@ -184,8 +187,9 @@ app.get('/getWorkerMarkers', (req, ress) => {
                     for (let worker of res2) {
 
                         if (worker.queue.length > 0) {
+                            // console.log('Worker: ', worker);
                             const curFacility = worker.queue[0];
-                            console.log('Cur Facility ', curFacility, allFacilityIds)
+                            // console.log('Cur Facility ', curFacility, allFacilityIds)
                             if (allFacilityIds.includes(curFacility.facility)) {
                                 // console.log('hihihi')
                                 let coordinates = res[allFacilityIds.indexOf(curFacility.facility)].location.coordinates;
@@ -193,7 +197,7 @@ app.get('/getWorkerMarkers', (req, ress) => {
                                 coordinates[0] += 0.05;
                                 coordinates[0] += 0.05;
                                 coordinates.reverse();
-                                console.log('Name: ', worker.name);
+                                // console.log('Name: ', worker.name);
                                 markers.push({
                                     name: worker.name,
                                     traveling: worker.traveling,
@@ -237,11 +241,11 @@ app.post('/status', async function (req, res, next) {
     console.log("traveling? " + tech_after.traveling);
     console.log("next ticket: " + tech_after.queue[0]);
     console.log("num in the queue: " + tech_after.queue.length);
-    res.status(200).send({ traveling: tech_after.traveling, num_queue: tech_after.queue.length, destination: tech_after.queue[0]})
+    res.status(200).send({ traveling: tech_after.traveling, num_queue: tech_after.queue.length, destination: tech_after.queue[0] })
 });
 
 // updates a technician's traveling status
-app.post('/update',  async (req, res) => {
+app.post('/update', async (req, res) => {
 
     console.log("update hit");
     const { phone_number, attribute, change, work_order_id } = req.body;
@@ -253,7 +257,7 @@ app.post('/update',  async (req, res) => {
 
     // if updating traveling status
     if (attribute === "traveling") {
-        var worker = await Worker.findOne({phone_number: number});
+        var worker = await Worker.findOne({ phone_number: number });
         worker.traveling = change;
         worker.save();
     }
@@ -265,9 +269,9 @@ app.post('/update',  async (req, res) => {
         if (change === true) {
             console.log("request declined, removing");
             console.log("work order id: " + work_order_id);
-            var worker = await Worker.findOne({phone_number: number});
+            var worker = await Worker.findOne({ phone_number: number });
             // removes based on index of work_order
-            var index = worker.queue.map(function(x) {return x._id; }).indexOf(work_order_id);
+            var index = worker.queue.map(function (x) { return x._id; }).indexOf(work_order_id);
 
             console.log("index of work order: " + index);
             if (index !== -1) {
@@ -285,7 +289,7 @@ app.post('/update',  async (req, res) => {
         else if (change === false) {
             console.log("request finished, removing")
             // TODO: this is also where you text the creator of work order
-            var worker = await Worker.findOne({phone_number: number});
+            var worker = await Worker.findOne({ phone_number: number });
             // removes from the front of the queue
             var removed = worker.queue.shift();
             var hrs = removed.hours ? removed.hours : 0;

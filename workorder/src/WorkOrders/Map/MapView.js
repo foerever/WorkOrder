@@ -75,17 +75,15 @@ class MapView extends React.Component {
                                         </div>
                                     </Popup>
                                 </Marker>);
-                        }).concat(this.state.workerMarkers.map(worker => {
-                            console.log('Worker: ', worker);
+                        }).concat(this.state.workerMarkers.filter(worker => worker.state > 0).map(worker => {
                             return (
                                 <Marker
                                     key={worker.name}
                                     icon={worker.traveling ? technicianIconTraveling : technicianIconFixing}
                                     position={worker.coordinates} >
                                     <Popup>
-                                        <div>Technician Name: <br />
-                                            <div>{worker.name}</div>
-                                            <div>Technician is currently {worker.traveling === true
+                                        <div style={{ fontWeight: 'bolder' }}>Technician:<br />
+                                            <div>{worker.name} is currently {worker.state === 2
                                                 ? 'traveling to this facility.'
                                                 : 'working on the facility.'}
                                             </div>
