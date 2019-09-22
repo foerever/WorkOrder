@@ -98,29 +98,11 @@ app.post('/workorder_submission', async function (req, res, next) {
     optimal_worker.queue.push(workOrder._id)
     optimal_worker.save()
 
-    // client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440')
-    //     .executions
-    //     .list({
-    //         dateCreatedFrom: new Date(Date.UTC(2019, 1, 17, 0, 0, 0)),
-    //         dateCreatedTo: new Date(Date.UTC(2019, 1, 18, 0, 0, 0)),
-    //         limit: 20
-    //     })
-    //     .then(executions => executions.forEach(e => console.log(e.sid)));
-
     client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440').executions
         .create({ to: '+' + optimal_worker.phone_number.toString(), from: '+14422640841',
             parameters: JSON.stringify({ id: workOrder._id, location: workOrder.facility,
                                                 time: workOrder.hours.toString()})})
         .then(function(execution) { console.log(execution.sid); });
-
-    // client.messages
-    //     .create({
-    //         body: ('ALERT: New Work Order: ' +  workOrder._id +  ' Location: ' + workOrder.facility
-    //             + ' Time to complete: ' + workOrder.hours.toString() + ' Reply YES to accept, NO to decline. '),
-    //         from: '+14422640841',
-    //         to: '+' + optimal_worker.phone_number.toString()  // replace with user.number
-    //     })
-    //     .then(message => console.log(message.sid));
 
     // need to eventually find a different page for this to go to
     res.status(200).send("thanks for submitting a work order :)")
@@ -190,36 +172,22 @@ app.post('/status', async function (req, res, next) {
     // find technician in database
     var number = req.body.phone_number.substring(1);
 
-    // this one is to modify the database
-    // this one is so u can see the contents or whatever u need to do
-    // var tech_object = (await Worker.findOne({ phone_number: number }));
-    // console.log(tech_object);
-    // console.log("before: " + tech_object.traveling);
-    // tech_object.traveling = false;
-    //
-    // const filter = { phone_number: number };
-    // const update = { traveling: false };
-    // let doc = await Worker.findOneAndUpdate(filter, update, {
-    //     new: true // new specifies that 'doc' is the updated version
-    // });
-
     var tech_after = (await Worker.findOne({ phone_number: number }));
 
     console.log("traveling? " + tech_after.traveling);
     console.log("next ticket: " + tech_after.queue[0]);
-    res.status(200).send({ traveling: tech_after.traveling, destination: tech_after.queue[0]})
+    console.log("num in the queue: " + tech_after.queue.length);
+    res.status(200).send({ traveling: tech_after.traveling, num_queue: tech_after.queue.length, destination: tech_after.queue[0]})
 });
 
 // updates a technician's traveling status
-app.post('/update', async (req, res) => {
+app.post('/update',  async (req, res) => {
 
     console.log("update hit");
     const { phone_number, attribute, change } = req.body;
     console.log("phone number: " + phone_number + " attribute: " + attribute + " change" + change);
 
-    // var number = phone_number.substring(1);
-
-    var number = req.body.phone_number;
+    var number = phone_number.substring(1);
 
     // if updating traveling status
     if (attribute === "traveling") {
@@ -234,14 +202,10 @@ app.post('/update', async (req, res) => {
         // declined request, remove from back
         if (change === true) {
             console.log("request declined, removing");
-            console.log(number)
             var worker = await Worker.findOne({phone_number: number});
             // removes from the back of queue
             worker.queue.pop();
             worker.save();
-            // Worker.update({ number }, { '$pop': { queue: 1 } }, (err, doc) => {
-            //     res.send('Declined task. Removed from queue.');
-            // });
         }
         // finished request, remove from front
         else if (change === false) {
@@ -251,19 +215,10 @@ app.post('/update', async (req, res) => {
             // removes from the front of the queue
             worker.queue.shift();
             worker.save()
-            // Worker.update({ number }, { '$pop': { queue: -1 } }, (err, doc) => {
-            //     res.send('Completed task. Removed from queue.');
-            // });
         }
 
     }
-
-    var tech = Worker.find({
-        phone_number: number
-    });
-    console.log("[AFTER UPDATING]" + "tech traveling" + tech.traveling + "tech queue: " + tech.queue);
-
-    res.status(200)
+    res.status(200).send("You updated the database!")
 });
 
 const port = process.env.PORT || 8000;
