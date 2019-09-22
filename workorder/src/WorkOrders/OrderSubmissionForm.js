@@ -54,7 +54,6 @@ class OrderSubmissionForm extends React.Component {
                                     type="email" placeholder="Enter email" />
 
                             </Form.Group>
-                            {/* <br /> */}
 
                             <Form.Label>Equipment ID</Form.Label>
                             <Form.Control

@@ -56,7 +56,7 @@ class MapView extends React.Component {
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
                     <MarkerClusterGroup
-                        disableClusteringAtZoom={9}
+                        disableClusteringAtZoom={7}
                         spiderfyOnMaxZoom={false}>
                         {this.state.facilities.map(facility => {
                             let coordinates = facility.location.coordinates;
@@ -66,7 +66,11 @@ class MapView extends React.Component {
                                     icon={facilityIcon}
                                     position={coordinates}
                                     key={facility.facilityId}>
-                                    <Popup><div>Facility ID: <br />{facility.facilityId}</div></Popup>
+                                    <Popup>
+                                        <div>Facility ID: <br />
+                                            <div>{facility.facilityId}</div>
+                                        </div>
+                                    </Popup>
                                 </Marker>);
                         }).concat(this.state.workerMarkers.map(worker => {
                             return (
@@ -74,7 +78,15 @@ class MapView extends React.Component {
                                     key={worker.name}
                                     icon={worker.traveling ? technicianIconTraveling : technicianIconFixing}
                                     position={worker.coordinates} >
-                                    <Popup><div>Worker Name: <br />{worker.name}</div></Popup>
+                                    <Popup>
+                                        <div>Technician Name: <br />
+                                            <div>{worker.name}</div>
+                                            <div>Technician is currently {worker.traveling === true
+                                                ? 'traveling to this facility.'
+                                                : 'working on the facility.'}
+                                            </div>
+                                        </div>
+                                    </Popup>
                                 </Marker>)
                         }))}
                     </MarkerClusterGroup>
