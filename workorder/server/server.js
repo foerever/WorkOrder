@@ -64,7 +64,7 @@ app.post('/addWorkOrderToWorkerQueue', (req, res) => {
 
 // POSTS 
 app.post('/workorder_submission', async function (req, res, next) {
-
+    console.log("made it")
     var workOrder = new WorkOrder({
         name: req.body.name,
         email: req.body.email,
@@ -92,18 +92,35 @@ app.post('/workorder_submission', async function (req, res, next) {
     // optimal_worker.queue.push(workOrder._id)
     // optimal_worker.save()
 
-    var optimal_worker = await Worker.findOne({ phone_number: 17138288185});
+    var optimal_worker = await Worker.findOne({ phone_number: 19492957381});
 
     console.log("optimal_worker: " + optimal_worker);
+    optimal_worker.queue.push(workOrder._id)
+    optimal_worker.save()
 
-    client.messages
-        .create({
-            body: ('\nALERT: \nNew chevron work order.\n\nWork Order Id: ' +  workOrder._id + '\n\n Location: ' + workOrder.facility
-                + '\n\n Estimated hours to complete: ' + workOrder.hours.toString() + '\n\n Reply YES to accept, NO to decline. '),
-            from: '+14422640841',
-            to: '+' + optimal_worker.phone_number.toString()  // replace with user.number
-        })
-        .then(message => console.log(message.sid));
+    // client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440')
+    //     .executions
+    //     .list({
+    //         dateCreatedFrom: new Date(Date.UTC(2019, 1, 17, 0, 0, 0)),
+    //         dateCreatedTo: new Date(Date.UTC(2019, 1, 18, 0, 0, 0)),
+    //         limit: 20
+    //     })
+    //     .then(executions => executions.forEach(e => console.log(e.sid)));
+
+    client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440').executions
+        .create({ to: '+' + optimal_worker.phone_number.toString(), from: '+14422640841',
+            parameters: JSON.stringify({ id: workOrder._id, location: workOrder.facility,
+                                                time: workOrder.hours.toString()})})
+        .then(function(execution) { console.log(execution.sid); });
+
+    // client.messages
+    //     .create({
+    //         body: ('ALERT: New Work Order: ' +  workOrder._id +  ' Location: ' + workOrder.facility
+    //             + ' Time to complete: ' + workOrder.hours.toString() + ' Reply YES to accept, NO to decline. '),
+    //         from: '+14422640841',
+    //         to: '+' + optimal_worker.phone_number.toString()  // replace with user.number
+    //     })
+    //     .then(message => console.log(message.sid));
 
     // need to eventually find a different page for this to go to
     res.status(200).send("thanks for submitting a work order :)")
@@ -172,7 +189,7 @@ app.post('/status', async function (req, res, next) {
 
     // find technician in database
     var number = req.body.phone_number.substring(1);
-    console.log("number: " + number);
+
     // this one is to modify the database
     // this one is so u can see the contents or whatever u need to do
     // var tech_object = (await Worker.findOne({ phone_number: number }));
@@ -194,27 +211,44 @@ app.post('/status', async function (req, res, next) {
 });
 
 // updates a technician's traveling status
-app.post('/update', (req, res) => {
+app.post('/update', async (req, res) => {
 
     console.log("update hit");
-    const { phone_number, attribute, travl_boolean } = req.body;
-    console.log("phone number: " + phone_number + " attribute: " + attribute + " travl_boolean" + travl_boolean);
+    const { phone_number, attribute, change } = req.body;
+    console.log("phone number: " + phone_number + " attribute: " + attribute + " change" + change);
 
     var number = phone_number.substring(1);
 
     // if updating traveling status
     if (attribute === "traveling") {
-        Worker.update({ number }, { '$set': { traveling: travl_boolean } }, (err, doc) => {
-            res.send('Updated traveling status to ' + travl_boolean);
+        Worker.update({ number }, { '$set': { traveling: change } }, (err, doc) => {
+            res.send('Updated traveling status to ' + change);
         });
     }
 
     // if finished with a task, remove from queue
     else if (attribute === "queue") {
-        // TODO: this is also where you text the creator of work order
-        Worker.update({ number }, { '$pop': { queue: -1 } }, (err, doc) => {
-            res.send('Completed task. Removed from queue.');
-        });
+
+        // declined request, remove from back
+        if (change === true) {
+            console.log("request declined, removing");
+
+            var worker = await Worker.find({phone_number: number});
+            worker.queue.pop();
+            worker.save();
+            // Worker.update({ number }, { '$pop': { queue: 1 } }, (err, doc) => {
+            //     res.send('Declined task. Removed from queue.');
+            // });
+        }
+        // finished request, remove from front
+        else if (change === false) {
+            console.log("request finished, removing")
+            // TODO: this is also where you text the creator of work order
+            Worker.update({ number }, { '$pop': { queue: -1 } }, (err, doc) => {
+                res.send('Completed task. Removed from queue.');
+            });
+        }
+
     }
 
     var tech = Worker.find({
