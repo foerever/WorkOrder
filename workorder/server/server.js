@@ -217,7 +217,9 @@ app.post('/update', async (req, res) => {
     const { phone_number, attribute, change } = req.body;
     console.log("phone number: " + phone_number + " attribute: " + attribute + " change" + change);
 
-    var number = phone_number.substring(1);
+    // var number = phone_number.substring(1);
+
+    var number = req.body.phone_number;
 
     // if updating traveling status
     if (attribute === "traveling") {
@@ -232,8 +234,9 @@ app.post('/update', async (req, res) => {
         // declined request, remove from back
         if (change === true) {
             console.log("request declined, removing");
-
-            var worker = await Worker.find({phone_number: number});
+            console.log(number)
+            var worker = await Worker.findOne({phone_number: number});
+            // removes from the back of queue
             worker.queue.pop();
             worker.save();
             // Worker.update({ number }, { '$pop': { queue: 1 } }, (err, doc) => {
@@ -244,9 +247,13 @@ app.post('/update', async (req, res) => {
         else if (change === false) {
             console.log("request finished, removing")
             // TODO: this is also where you text the creator of work order
-            Worker.update({ number }, { '$pop': { queue: -1 } }, (err, doc) => {
-                res.send('Completed task. Removed from queue.');
-            });
+            var worker = await Worker.findOne({phone_number: number});
+            // removes from the front of the queue
+            worker.queue.shift();
+            worker.save()
+            // Worker.update({ number }, { '$pop': { queue: -1 } }, (err, doc) => {
+            //     res.send('Completed task. Removed from queue.');
+            // });
         }
 
     }
