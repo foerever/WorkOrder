@@ -1,6 +1,10 @@
 var path = require('path');
 const cors = require('cors');
 
+const accountSid = 'ACf8dbd03481d0f69325cee1a3284434d7';
+const authToken = '359e4fd7c507e8fc06d6cb697f075c5d';
+const client = require('twilio')(accountSid, authToken);
+
 var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
@@ -12,7 +16,7 @@ var Worker = models.Worker;
 var Facility = models.Facility;
 
 var optimization = require('./optimize.js')
-mongoose.connect(require('./connection.js'));
+mongoose.connect(require('./connection.js'), { useFindAndModify: false });
 
 //run middleware
 app.use(cors());
@@ -60,7 +64,7 @@ app.post('/addWorkOrderToWorkerQueue', (req, res) => {
 
 // POSTS 
 app.post('/workorder_submission', async function (req, res, next) {
-
+    console.log("made it")
     var workOrder = new WorkOrder({
         name: req.body.name,
         email: req.body.email,
@@ -87,6 +91,18 @@ app.post('/workorder_submission', async function (req, res, next) {
     // var optimal_worker = await Worker.findOne({ phone_number: optimization.selectOptimalWorker(workOrder) })
     // optimal_worker.queue.push(workOrder._id)
     // optimal_worker.save()
+
+    var optimal_worker = await Worker.findOne({ phone_number: 19492957381});
+
+    console.log("optimal_worker: " + optimal_worker);
+    optimal_worker.queue.push(workOrder._id)
+    optimal_worker.save()
+
+    client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440').executions
+        .create({ to: '+' + optimal_worker.phone_number.toString(), from: '+14422640841',
+            parameters: JSON.stringify({ id: workOrder._id, location: workOrder.facility,
+                                                time: workOrder.hours.toString()})})
+        .then(function(execution) { console.log(execution.sid); });
 
     // need to eventually find a different page for this to go to
     res.status(200).send("thanks for submitting a work order :)")
@@ -219,43 +235,55 @@ app.post('/status', async function (req, res, next) {
     console.log("status hit");
 
     // find technician in database
-    var number = req.body.phone_number;
-    console.log("number: " + number.substring(1));
-    // this one is to modify the database
+    var number = req.body.phone_number.substring(1);
 
-    // this one is so u can see the contents or whatever u need to do
-    var tech_object = (await Worker.findOne({ phone_number: number.substring(1) }))[0].toObject();
-    console.log(tech_object);
-    // unfortunately to save the object we need to refetch it again for now | temporary fix
-    var tech_cursor = await Worker.findOne({ phone_number: number.substring(1) })
-    tech_cursor.traveling = true;
-    tech_cursor.save();
+    var tech_after = (await Worker.findOne({ phone_number: number }));
 
-    // find technician's first work order
-    // var first_work_order = tech.queue[0];
-    // console.log("first_work_order:" + first_work_order);
-    // var t = tech.traveling;
-
-    res.status(200).send({ "traveling": "yes" })
+    console.log("traveling? " + tech_after.traveling);
+    console.log("next ticket: " + tech_after.queue[0]);
+    console.log("num in the queue: " + tech_after.queue.length);
+    res.status(200).send({ traveling: tech_after.traveling, num_queue: tech_after.queue.length, destination: tech_after.queue[0]})
 });
 
 // updates a technician's traveling status
-app.post('/update', (req, res) => {
-    // fields sent
-    // "phone_number" // phone number of technician
-    // "field" // field to update
-    // "action" // remove
-    // "traveling": boolean
+app.post('/update',  async (req, res) => {
 
-    // find technician in database
-    var number = req.body.number;
-    var tech = Technician.find({
-        phone_number: number
-    });
+    console.log("update hit");
+    const { phone_number, attribute, change } = req.body;
+    console.log("phone number: " + phone_number + " attribute: " + attribute + " change" + change);
 
-    console.log(tech);
+    var number = phone_number.substring(1);
 
-    tech.save();
+    // if updating traveling status
+    if (attribute === "traveling") {
+        Worker.update({ number }, { '$set': { traveling: change } }, (err, doc) => {
+            res.send('Updated traveling status to ' + change);
+        });
+    }
+
+    // if finished with a task, remove from queue
+    else if (attribute === "queue") {
+
+        // declined request, remove from back
+        if (change === true) {
+            console.log("request declined, removing");
+            var worker = await Worker.findOne({phone_number: number});
+            // removes from the back of queue
+            worker.queue.pop();
+            worker.save();
+        }
+        // finished request, remove from front
+        else if (change === false) {
+            console.log("request finished, removing")
+            // TODO: this is also where you text the creator of work order
+            var worker = await Worker.findOne({phone_number: number});
+            // removes from the front of the queue
+            worker.queue.shift();
+            worker.save()
+        }
+
+    }
+    res.status(200).send("You updated the database!")
 });
 
 const port = process.env.PORT || 8000;
