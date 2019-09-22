@@ -43,6 +43,11 @@ app.get('/workers', (req, res) => {
     })
 });
 
+// TESTING ONLY
+app.get('/nukeWorkers', (req, res) => {
+    Worker.remove({ name: { '$ne': 'Erica' } })
+        .then(doc => res.send('Nuked all workers except Erica.'))
+});
 app.get('/', (req, res) => {
     res.sendFile(path.resolve(__dirname, '../public/', 'index.html'));
 });
@@ -113,7 +118,7 @@ app.post('/workorder_submission', async function (req, res, next) {
 })
 
 app.post('/worker_submission', function (req, res, next) {
-    // console.log(req.body.shift);
+    console.log(req.body.shift);
     var workerSignUp = new Worker({
         name: req.body.name,
         phone_number: req.body.phone_number,
@@ -123,6 +128,7 @@ app.post('/worker_submission', function (req, res, next) {
         traveling: false,
         hoursLeft: 0
     });
+    console.log(workerSignUp.shift);
 
     workerSignUp.save()
     // console.log('saved!!');
