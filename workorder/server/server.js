@@ -99,26 +99,23 @@ app.post('/workorder_submission', async function (req, res, next) {
 
     var optimal_worker = await Worker.findOne({ phone_number: 19492957381 });
 
-    console.log("optimal_worker: " + optimal_worker);
+    console.log("optimal_worker: " + optimal_worker.name);
     optimal_worker.queue.push(workOrder._id)
     optimal_worker.save()
 
     client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440').executions
-        .create({
-            to: '+' + optimal_worker.phone_number.toString(), from: '+14422640841',
-            parameters: JSON.stringify({
-                id: workOrder._id, location: workOrder.facility,
-                time: workOrder.hours.toString()
-            })
-        })
-        .then(function (execution) { console.log(execution.sid); });
+        .create({ to: '+' + optimal_worker.phone_number.toString(), from: '+14422640841',
+            parameters: JSON.stringify({ id: workOrder._id, location: workOrder.facility,
+                                                time: workOrder.hours
+            })})
+        .then(function(execution) { console.log(execution.sid); });
 
     // need to eventually find a different page for this to go to
     res.status(200).send("thanks for submitting a work order :)")
 })
 
 app.post('/worker_submission', function (req, res, next) {
-    console.log(req.body.shift);
+
     var workerSignUp = new Worker({
         name: req.body.name,
         phone_number: req.body.phone_number,
@@ -228,19 +225,6 @@ app.post('/getFacilitiesInBox', (req, res) => {
         catch(err => console.log(err));
 })
 
-// Technician has declined the work order, remove from their queue
-app.post('/declined', (req, res) => {
-    // find technician in database
-    var number = req.body.number;
-    var tech = Technician.find({
-        phone_number: number
-    });
-
-    var dec_work_order = tech.queue.pop();
-
-    // TODO: function to reassign work order
-});
-
 // functionally a get request to retrieve information about the technician's current status
 app.post('/status', async function (req, res, next) {
     console.log("status hit");
@@ -253,48 +237,65 @@ app.post('/status', async function (req, res, next) {
     console.log("traveling? " + tech_after.traveling);
     console.log("next ticket: " + tech_after.queue[0]);
     console.log("num in the queue: " + tech_after.queue.length);
-    res.status(200).send({ traveling: tech_after.traveling, num_queue: tech_after.queue.length, destination: tech_after.queue[0] })
+    res.status(200).send({ traveling: tech_after.traveling, num_queue: tech_after.queue.length, destination: tech_after.queue[0]})
 });
 
 // updates a technician's traveling status
-app.post('/update', async (req, res) => {
+app.post('/update',  async (req, res) => {
 
     console.log("update hit");
-    const { phone_number, attribute, change } = req.body;
-    console.log("phone number: " + phone_number + " attribute: " + attribute + " change" + change);
+    const { phone_number, attribute, change, work_order_id } = req.body;
+    console.log("phone number: " + phone_number + " attribute: " + attribute + " change" + change + " work_order_id: "
+        + work_order_id
+    );
 
     var number = phone_number.substring(1);
 
     // if updating traveling status
     if (attribute === "traveling") {
-        Worker.update({ number }, { '$set': { traveling: change } }, (err, doc) => {
-            res.send('Updated traveling status to ' + change);
-        });
+        var worker = await Worker.findOne({phone_number: number});
+        worker.traveling = change;
+        worker.save();
     }
 
-    // if finished with a task, remove from queue
+    // modifications to the queue
     else if (attribute === "queue") {
-
-        // declined request, remove from back
+        console.log("modifying queue");
+        // declined request, remove by index
         if (change === true) {
             console.log("request declined, removing");
-            var worker = await Worker.findOne({ phone_number: number });
-            // removes from the back of queue
-            worker.queue.pop();
-            worker.save();
+            console.log("work order id: " + work_order_id);
+            var worker = await Worker.findOne({phone_number: number});
+            // removes based on index of work_order
+            var index = worker.queue.map(function(x) {return x._id; }).indexOf(work_order_id);
+
+            console.log("index of work order: " + index);
+            if (index !== -1) {
+                var removed = worker.queue.splice(index, 1);
+                var hrs = removed.hours ? removed.hours : 0;
+                // decrement hours on this worker
+                worker.hoursLeft -= hrs;
+                worker.save();
+
+                // TODO: function to reassign work order
+            }
+            // hacky do nothing if not found..but it shouldn't be not found anyways ¯\_(ツ)_/¯ just in case
         }
         // finished request, remove from front
         else if (change === false) {
             console.log("request finished, removing")
             // TODO: this is also where you text the creator of work order
-            var worker = await Worker.findOne({ phone_number: number });
+            var worker = await Worker.findOne({phone_number: number});
             // removes from the front of the queue
-            worker.queue.shift();
-            worker.save()
+            var removed = worker.queue.shift();
+            var hrs = removed.hours ? removed.hours : 0;
+            // decrement hours on this worker
+            worker.hoursLeft -= hrs;
+            worker.save();
         }
 
     }
-    res.status(200).send("You updated the database!")
+    res.status(200).send("You updated the database!\n")
 });
 
 const port = process.env.PORT || 8000;
