@@ -88,6 +88,7 @@ module.exports = {
     selectOptimalWorker: function (workOrder) {
         return find_valid_workers(workOrder)
             .then(validWorkers => {
+                // Assuming there is at least one valid worker.
                 let candidate = validWorkers[0];
                 
                 // We are optimizing by summing the z-score of two important attributes: 
@@ -120,7 +121,7 @@ module.exports = {
                 
                 let index_min = z_score_list.indexOf(Math.min(z_score_list));
                 console.log(index_min);
-                if (index_min > 0) {
+                if (index_min >= 0) {
                     candidate = validWorkers[index_min];
                 }
                 console.log("candidate ", candidate);
@@ -129,25 +130,10 @@ module.exports = {
                 // console.log("PUSHING WORKORDER: ", workOrder);
                 candidate.queue.push(workOrder);
                 candidate.hoursLeft += workOrder.hours;
-                candidate.traveling ? candidate.queue.sort((a, b) => { return a.priority - b.priority }) :
-                    candidate.queue.slice(1).sort((a, b) => { return a.priority - b.priority });
+                candidate.queue = 
+                candidate.queue.slice(1).sort((a, b) => { return a.priority - b.priority }).unshift(candidate.queue[0]);
                 return candidate;
             })
             .catch(err => console.log(err));
         }
     }
-    // sortAddOrder: async function (candidate, workOrder) {
-    //     console.log("CANDIATE: ", candidate);
-    //     candidate.then(res => {
-    //         console.log("RES ", res);
-    //         res.queue.push(workOrder);
-    //         res.traveling ? candidate.queue.sort((a, b) => { return a.priority - b.priority }) :
-    //             res.queue.slice(1).sort((a, b) => { return a.priority - b.priority });
-    //         return res;
-    //     }
-    // ).catch(err => console.log(err));
-    // candidate.queue.push(workOrder);
-    // candidate.traveling ? candidate.queue.sort((a, b) => { return a.priority - b.priority }) :
-    //     candidate.queue.slice(1).sort((a, b) => { return a.priority - b.priority });
-    // return candidate.phone_number;
-    // }
