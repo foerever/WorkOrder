@@ -82,12 +82,16 @@ class Metrics extends React.Component {
                         data: [],
                         borderColor: random_rgba()
                     }
-                    for (var i = 1; i < 25; i++) {
-                        if (i in value) {
-                            dataSet.data.push(value[i]);
+
+                    var curr = new Date().getHours();
+                    for (var i = 0; i < 24; i++) {
+                        curr = curr === 0 ? 24 : curr
+                        if (curr in value) {
+                            dataSet.data.unshift(value[curr]);
                         } else {
-                            dataSet.data.push(0);
+                            dataSet.data.unshift(0);
                         }
+                        curr = curr - 1 === 0 ? 24 : curr - 1 
                     }
                     lineChartDataSets.push(dataSet);
                 }
@@ -130,7 +134,7 @@ class Metrics extends React.Component {
         for (var i = 0; i < 24; i++) {
             curr = curr === 0 ? 24 : curr
             arr.unshift(curr)
-            curr = curr - 1 === 0 ? 24 : curr - 1
+            curr = curr - 1 === 0 ? 24 : curr - 1 
         }
 
         var lineChartData = {
@@ -169,17 +173,6 @@ class Metrics extends React.Component {
                         </Navbar>
                         <Line data={lineChartData} />
                     </Col>
-                    <Col><Navbar bg="light">
-                        <Navbar.Brand>
-                            <img
-                                src={logo}
-                                width="30"
-                                height="30"
-                                className="d-inline-block align-top"
-                                alt="React Bootstrap logo" /> Hourly Frequency of Work Order per Equipment Type</Navbar.Brand>
-                    </Navbar>
-                        <Line data={lineChartData} />
-                    </Col>
                 </Row>
                 <Row>
                     <Col>
@@ -192,7 +185,8 @@ class Metrics extends React.Component {
                                     className="d-inline-block align-top"
                                     alt="React Bootstrap logo" /> Queue Length per Technician</Navbar.Brand>
                         </Navbar>
-                        <Line data={lineChartData} />
+                        <Bar data={barChartData} />
+
                     </Col>
                     <Col>
                         <Navbar bg="light">
