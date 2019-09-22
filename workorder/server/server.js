@@ -101,7 +101,8 @@ app.post('/workorder_submission', async function (req, res, next) {
     client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440').executions
         .create({ to: '+' + optimal_worker.phone_number.toString(), from: '+14422640841',
             parameters: JSON.stringify({ id: workOrder._id, location: workOrder.facility,
-                                                time: workOrder.hours.toString()})})
+                                                time: workOrder.hours.toString()
+            })})
         .then(function(execution) { console.log(execution.sid); });
 
     // need to eventually find a different page for this to go to
@@ -184,8 +185,10 @@ app.post('/status', async function (req, res, next) {
 app.post('/update',  async (req, res) => {
 
     console.log("update hit");
-    const { phone_number, attribute, change } = req.body;
-    console.log("phone number: " + phone_number + " attribute: " + attribute + " change" + change);
+    const { phone_number, attribute, change, work_order_id } = req.body;
+    console.log("phone number: " + phone_number + " attribute: " + attribute + " change" + change + " work_order_id: "
+        + work_order_id
+    );
 
     var number = phone_number.substring(1);
 
@@ -196,16 +199,26 @@ app.post('/update',  async (req, res) => {
         });
     }
 
-    // if finished with a task, remove from queue
+    // modifications to the queue
     else if (attribute === "queue") {
 
-        // declined request, remove from back
+        // declined request, remove by index
         if (change === true) {
             console.log("request declined, removing");
+            console.log("work order id: " + work_order_id);
             var worker = await Worker.findOne({phone_number: number});
-            // removes from the back of queue
-            worker.queue.pop();
-            worker.save();
+            // removes based on index of work_order
+            var index = worker.queue.map(function(x) {return x._id; }).indexOf(work_order_id);
+
+            console.log("index of work order: " + index);
+            if (index !== -1) {
+                var removed = worker.queue.splice(index, 1);
+                var hrs = removed.hours ? removed.hours : -9;
+                // decrement hours on this worker
+                worker.hoursLeft -= hrs;
+                worker.save();
+            }
+            // hacky do nothing if not found..but it shouldn't be not found anyways ¯\_(ツ)_/¯ just in case
         }
         // finished request, remove from front
         else if (change === false) {
@@ -213,12 +226,15 @@ app.post('/update',  async (req, res) => {
             // TODO: this is also where you text the creator of work order
             var worker = await Worker.findOne({phone_number: number});
             // removes from the front of the queue
-            worker.queue.shift();
-            worker.save()
+            var removed = worker.queue.shift();
+
+            // decrement hours on this worker
+            worker.hoursLeft -= removed.hours;
+            worker.save();
         }
 
     }
-    res.status(200).send("You updated the database!")
+    res.status(200).send("You updated the database!\n")
 });
 
 const port = process.env.PORT || 8000;
