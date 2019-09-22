@@ -61,7 +61,6 @@ class MapView extends React.Component {
                         {this.state.facilities.map(facility => {
                             let coordinates = facility.location.coordinates;
                             coordinates.reverse();
-                            console.log(facility.facilityId)
                             return (
                                 <Marker
                                     icon={facilityIcon}
