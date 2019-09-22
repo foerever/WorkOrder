@@ -169,17 +169,6 @@ class Metrics extends React.Component {
                         </Navbar>
                         <Line data={lineChartData} />
                     </Col>
-                    <Col><Navbar bg="light">
-                        <Navbar.Brand>
-                            <img
-                                src={logo}
-                                width="30"
-                                height="30"
-                                className="d-inline-block align-top"
-                                alt="React Bootstrap logo" /> Hourly Frequency of Work Order per Equipment Type</Navbar.Brand>
-                    </Navbar>
-                        <Line data={lineChartData} />
-                    </Col>
                 </Row>
                 <Row>
                     <Col>
@@ -192,7 +181,8 @@ class Metrics extends React.Component {
                                     className="d-inline-block align-top"
                                     alt="React Bootstrap logo" /> Queue Length per Technician</Navbar.Brand>
                         </Navbar>
-                        <Line data={lineChartData} />
+                        <Bar data={barChartData} />
+
                     </Col>
                     <Col>
                         <Navbar bg="light">
