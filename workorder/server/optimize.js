@@ -128,20 +128,22 @@ module.exports = {
                 candidate.queue.push(workOrder);
                 console.log("first i get here")
                 candidate.hoursLeft += workOrder.hours;
-                console.log("i get here")
-                var first = candidate.queue[0]
-                console.log(first)
-                var something = candidate.queue.slice(1)
-                console.log(something)
-                something.sort((a, b) => { return a.priority - b.priority })
-                console.log(something)
-                something.push(first)
-                console.log("i got here!")
-                candidate.queue = (
-                    candidate.queue.length > 1 
-                    ? something
-                    : candidate.queue
-                );
+
+                // console.log("i get here")
+                var first_id = candidate.queue[0]._id
+                // console.log(first)
+                // var something = candidate.queue.slice(1)
+                // console.log(something)
+                candidate.queue.sort((a, b) => { return a._id === first_id ? 1 : a.priority - b.priority })
+                // console.log(something)
+
+                // something.push(first)
+                // console.log("i got here!")
+                // candidate.queue = (
+                //     candidate.queue.length > 1 
+                //     ? something
+                //     : candidate.queue
+                // );
                 console.log("i also get here")
                 return candidate;
             })
