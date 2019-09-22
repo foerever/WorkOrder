@@ -31,11 +31,11 @@ class TechnicianForm extends React.Component {
 
     }
     onSubmit = () => {
-
         axios.post('http://localhost:8000/worker_submission', {
             name: this.form.name,
             phone_number: this.form.phone,
-            certifications: this.allCerts.filter(cert => this.certs[`check-${cert}`] === true)
+            certifications: this.allCerts.filter(cert => this.certs[`check-${cert}`] === true),
+            shift: this.form.shift
         });
     }
     render() {
@@ -81,7 +81,7 @@ class TechnicianForm extends React.Component {
                             </Form.Control>
                         </Form.Group>
 
-                        <Button variant="primary" onClick={click => this.onSubmit()}>
+                        <Button variant="primary" type="submit" onClick={click => this.onSubmit()}>
                             Submit
             </Button>
                     </Form>

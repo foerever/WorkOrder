@@ -11,7 +11,8 @@ class OrderSubmissionForm extends React.Component {
             equipmentId: '',
             equipmentType: '',
             priority: 1,
-            facilityId: ''
+            facilityId: '',
+            completionTime: 0
         };
     }
     onSubmit() {
@@ -21,7 +22,8 @@ class OrderSubmissionForm extends React.Component {
             equipment_id: this.form.equipmentId,
             equipment_type: this.form.equipmentType,
             priority: this.form.priority,
-            facility: this.form.facilityId
+            facility: this.form.facilityId,
+            hours: this.form.completionTime
         });
     }
     handleChange = e => {
@@ -52,7 +54,6 @@ class OrderSubmissionForm extends React.Component {
                                     type="email" placeholder="Enter email" />
 
                             </Form.Group>
-                            {/* <br /> */}
 
                             <Form.Label>Equipment ID</Form.Label>
                             <Form.Control
@@ -86,6 +87,12 @@ class OrderSubmissionForm extends React.Component {
                             <Form.Label>Facility</Form.Label>
                             <Form.Control placeholder="Facility ID"
                                 name='facilityId'
+                                onChange={this.handleChange} />
+                            <br />
+
+                            <Form.Label>Completion Time</Form.Label>
+                            <Form.Control placeholder="Completion Time"
+                                name='completionTime'
                                 onChange={this.handleChange} />
                             <br />
 

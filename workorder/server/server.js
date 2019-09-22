@@ -43,6 +43,11 @@ app.get('/workers', (req, res) => {
     })
 });
 
+// TESTING ONLY
+app.get('/nukeWorkers', (req, res) => {
+    Worker.remove({ name: { '$ne': 'Erica' } })
+        .then(doc => res.send('Nuked all workers except Erica.'))
+});
 app.get('/', (req, res) => {
     res.sendFile(path.resolve(__dirname, '../public/', 'index.html'));
 });
@@ -120,6 +125,7 @@ app.post('/worker_submission', function (req, res, next) {
         traveling: false,
         hoursLeft: 0
     });
+    console.log(workerSignUp.shift);
 
     workerSignUp.save()
     // console.log('saved!!');
@@ -138,10 +144,9 @@ app.get('/getFacilities', (req, res) => {
     Facility.find({}).then(doc => res.json(doc)).catch(err => console.log(err));
 })
 
-const getRandomInt = (min, max) => {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+const getRandomNum = (min, max) => {
+
+    return Math.floor(Math.random() * (max - min)) + min;
 }
 app.get('/deleteAllFacilities', (req, res) => {
     Facility.remove({}).then(res.send('Successfully deleted all facilities.'));
@@ -156,7 +161,7 @@ app.get('/populateFacilities/:num', (req, res) => {
             facilityId: `Facility ${i + 1}`,
             location: {
                 type: 'Point',
-                coordinates: [getRandomInt(-74.0060, -122.3321), getRandomInt(29.3013, 47.6062)]
+                coordinates: [getRandomNum(-94.1266, -106.4850), getRandomNum(27.8006, 33.9137)]
             }
         })
     }
