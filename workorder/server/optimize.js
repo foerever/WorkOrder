@@ -17,9 +17,9 @@ const find_fac = async (order) => {
         if (err) {
             throw "error";
         } else {
-            return doc.where('name').equals(order.facilityId);
+            return doc;
         }
-    });
+    }).where('name').equals(order.facilityId);
     return target_facility;
 }
 
@@ -43,7 +43,7 @@ const getPredictedTime = (target_facility1, target_facility2) => {
         Math.pow(Math.sin(dLong / 2), 2);
     let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     let distance = radiusEarth * c;
-    return distance / 30;
+    return distance / 900;
 }
 
 // Find a Worker from the Worker schema that can take the order
@@ -59,22 +59,24 @@ const find_valid_workers = async (order) => {
 
             // 6 - 12
             // 12 - 18
-            let curHour = new Date().getHours();
-
             doc = doc.filter(worker => {
-                const shiftEnd = worker.shift === 'AM' ? 12 : 18;
-                const shiftStart = worker.shift === 'AM' ? 6 : 12;
-                // console.log(worker)
+                let curHour = new Date().getHours();
+                const shiftEnd = worker.shift === true ? 12 : 24;
+                const shiftStart = worker.shift === true ? 1 : 12;
+                // console.log("AM", worker.shift);
+                // console.log(order.hours, "curhour", curHour);
+                // console.log(shiftStart, shiftEnd);
+                // console.log("Is this true? ", order.hours + curHour < shiftEnd && curHour > shiftStart);
                 return worker.certifications.includes(order.equipment_type) && order.hours + curHour < shiftEnd &&
-                    curTime > shiftStart;
+                    curHour > shiftStart;
             });
-
+            return doc;
         }
     })
+    console.log("valid working ", valid_workers);
     return valid_workers;
     // .where(order.equipment_type).in('certifications')
     // .where(hoursToMs(order.hours) + curTime > doc.shiftEnd && curTime < doc.shiftStart);
-    // return valid_workers;
 }
 
 // // Function that switches the latest order with the new order if priority of new order is higher && same fac
@@ -117,19 +119,12 @@ module.exports = {
                             });
                         // console.log('PERESON: ', person);
                         // Check to see if predicted drive time between current and order facility exceeds one hour
-                        if (getPredictedTime(find_fac(person.queue[0]), find_fac(workOrder)) < 1) {
-                            // Look for person with the maximum hours Left
-                            if (hours < person.hoursLeft) {
-                                hours = person.hoursLeft
-                                candidate = person;
-                            }
                         }
-                    }
-
                 }
                 // console.log("RETURNING CANDIDATE: ", candidate);
                 // console.log("PUSHING WORKORDER: ", workOrder);
                 candidate.queue.push(workOrder);
+                candidate.hoursLeft += workOrder.hours;
                 candidate.traveling ? candidate.queue.sort((a, b) => { return a.priority - b.priority }) :
                     candidate.queue.slice(1).sort((a, b) => { return a.priority - b.priority });
                 return candidate;
