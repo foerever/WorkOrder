@@ -82,12 +82,16 @@ class Metrics extends React.Component {
                         data: [],
                         borderColor: random_rgba()
                     }
-                    for (var i = 1; i < 25; i++) {
-                        if (i in value) {
-                            dataSet.data.push(value[i]);
+
+                    var curr = new Date().getHours();
+                    for (var i = 0; i < 24; i++) {
+                        curr = curr === 0 ? 24 : curr
+                        if (curr in value) {
+                            dataSet.data.unshift(value[curr]);
                         } else {
-                            dataSet.data.push(0);
+                            dataSet.data.unshift(0);
                         }
+                        curr = curr - 1 === 0 ? 24 : curr - 1 
                     }
                     lineChartDataSets.push(dataSet);
                 }
@@ -130,7 +134,7 @@ class Metrics extends React.Component {
         for (var i = 0; i < 24; i++) {
             curr = curr === 0 ? 24 : curr
             arr.unshift(curr)
-            curr = curr - 1 === 0 ? 24 : curr - 1
+            curr = curr - 1 === 0 ? 24 : curr - 1 
         }
 
         var lineChartData = {
