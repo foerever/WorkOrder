@@ -35,7 +35,7 @@ app.get('/workorders', (req, res) => {
 app.get('/workers', (req, res) => {
     Worker.find({
     }, function (err, doc) {
-        res.status(200).send(doc)
+        res.json(doc)
     })
 });
 
@@ -119,6 +119,44 @@ app.post('/addFacilities', (req, res) => {
 app.get('/getFacilities', (req, res) => {
     Facility.find({}).then(doc => res.json(doc)).catch(err => console.log(err));
 })
+
+
+
+app.get('/getWorkerMarkers', (req, ress) => {
+    Facility.find({})
+        .then(res => {
+            const allFacilityIds = res.map(facility => facility.facilityId);
+            // console.log(allFacilityIds, res);
+            Worker.find({})
+                .then(res2 => {
+                    let markers = [];
+                    // console.log(res2);
+                    for (let worker of res2) {
+
+                        if (worker.queue.length > 0) {
+                            const curFacility = worker.queue[0];
+                            // console.log(curFacility, allFacilityIds)
+                            if (allFacilityIds.includes(curFacility.facility)) {
+                                // console.log('hihihi')
+                                let coordinates = res[allFacilityIds.indexOf(curFacility.facility)].location.coordinates;
+                                //  offset so that the facility is still visible
+                                coordinates[0] += 0.05;
+                                coordinates[0] += 0.05;
+                                coordinates.reverse();
+                                markers.push({
+                                    name: worker.name,
+                                    traveling: worker.traveling,
+                                    coordinates,
+                                    curFacility: curFacility.facility
+                                });
+                            }
+                        }
+                    }
+                    ress.json(markers);
+                });
+        });
+
+});
 
 app.post('/getFacilitiesInBox', (req, res) => {
     const { bottomLeft, upperRight } = req.body;
