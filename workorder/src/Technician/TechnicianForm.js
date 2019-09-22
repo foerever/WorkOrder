@@ -21,7 +21,7 @@ class TechnicianForm extends React.Component {
     handleChange = e => {
         //  store phone numbers as only digits
         if (e.target.name === 'phone') {
-            this.form['phone'] = e.target.value.replace(/\D/g, '');
+            this.form['phone'] = '1' + e.target.value.replace(/\D/g, '');
         }
         else if (e.target.name === 'certs') {
             this.form.certs[e.target.id] = !this.form.certs[e.target.id];
@@ -57,7 +57,7 @@ class TechnicianForm extends React.Component {
                         <Form.Control
                             name='phone'
                             onChange={this.handleChange}
-                            placeholder="000-000-0000" />
+                            placeholder="0000000000" />
                         <br />
 
                         <Form.Label>Certifications</Form.Label>

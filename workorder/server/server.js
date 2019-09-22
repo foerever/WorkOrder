@@ -98,21 +98,58 @@ app.post('/workorder_submission', async function (req, res, next) {
     // optimal_worker.save()
 
     var optimal_worker = await Worker.findOne({ phone_number: 19492957381 });
+    // TODO: error catch optimal worker
 
     console.log("optimal_worker: " + optimal_worker.name);
     optimal_worker.queue.push(workOrder);
     optimal_worker.save()
     // TODO: make sure to add the hours onto hoursLeft
 
-    client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440').executions
-        .create({
-            to: '+' + optimal_worker.phone_number.toString(), from: '+14422640841',
-            parameters: JSON.stringify({
-                id: workOrder._id, location: workOrder.facility,
-                time: workOrder.hours
-            })
-        })
-        .then(function (execution) { console.log(execution.sid); });
+    console.log("date now: " + new Date(Date.now()));
+    console.log("date made: " + new Date(Date.UTC(2019, 9, 20, 0, 0, 0)));
+
+    console.log("contactChannelAddress: " + '+' + optimal_worker.phone_number.toString());
+
+    // see if there is current execution and remove it
+    client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440')
+        .executions
+        .list({
+            contactChannelAddress: '+' + optimal_worker.phone_number.toString(),
+            limit: 1
+        }).then(function (executions) {
+            // console.log("found exe: " + executions.forEach(e => console.log(e.sid)));
+            if (executions.length > 0) {
+                console.log("after filtering, now about to remove: " + executions[0].sid)
+                client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440')
+                    .executions(executions[0].sid)
+                    .remove()
+                    .then(execution =>
+                        // create a new flow with this number
+                        client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440').executions
+                            .create({
+                                to: '+' + optimal_worker.phone_number.toString(), from: '+14422640841',
+                                parameters: JSON.stringify({
+                                    id: workOrder._id, location: workOrder.facility,
+                                    time: workOrder.hours
+                                })
+                            })
+                            .then(function (execution) { console.log("created: " + execution.sid); }));
+            }
+            // no current execution, just make it
+            else {
+                // create a new flow with this number
+                client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440').executions
+                    .create({
+                        to: '+' + optimal_worker.phone_number.toString(), from: '+14422640841',
+                        parameters: JSON.stringify({
+                            id: workOrder._id, location: workOrder.facility,
+                            time: workOrder.hours
+                        })
+                    })
+                    .then(function (execution) { console.log("created: " + execution.sid); });
+            }
+
+        });
 
     // need to eventually find a different page for this to go to
     res.status(200).send("thanks for submitting a work order :)")
