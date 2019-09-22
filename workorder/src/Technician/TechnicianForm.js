@@ -69,7 +69,10 @@ class TechnicianForm extends React.Component {
                         <Toast.Body>Our system will match you with an optimal work order.</Toast.Body>
                     </Toast>
                     <Card.Header>
-                        <div>Technician Registration</div>
+                        <div>
+                            <img src={toastLogo} alt="logo"
+                                style={{ width: '1em', height: '1em', marginRight: '0.5em' }} /> Technician Registration
+                                </div>
                     </Card.Header>
                     <Card.Body>
                         <Form>

@@ -57,7 +57,10 @@ class OrderSubmissionForm extends React.Component {
                 </Toast>
                 <Card>
                     <Card.Header>
-                        <div >Create New Work Order</div>
+                        <div>
+                            <img src={toastLogo} alt="logo"
+                                style={{ width: '1em', height: '1em', marginRight: '0.5em' }} /> Create New Work Order
+                            </div>
                     </Card.Header>
                     <Card.Body>
                         <Form>
