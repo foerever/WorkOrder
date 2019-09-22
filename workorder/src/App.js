@@ -5,6 +5,7 @@ import { Navbar, Nav } from 'react-bootstrap';
 import OrderSubmission from './OrderSubmission';
 import TechnicianForm from './Technician/TechnicianForm.js';
 import Metrics from './Metrics/Metrics.js';
+import Demo from './Demo/Demo.js';
 
 class App extends React.Component {
 
@@ -28,13 +29,17 @@ class App extends React.Component {
           <Nav.Link onClick={() => this.navigate('home')}>Home</Nav.Link>
           <Nav.Link onClick={() => this.navigate('technician')}>Technician</Nav.Link>
           <Nav.Link onClick={() => this.navigate('metrics')}>Metrics</Nav.Link>
+          <Nav.Link onClick={() => this.navigate('demo')}>Demo</Nav.Link>
 
         </Navbar>
         {this.state.route === 'home'
           ? <OrderSubmission />
           : (this.state.route === 'technician'
-            ? <TechnicianForm /> 
-            : <Metrics/>)}
+            ? <TechnicianForm />
+            : (this.state.route == 'metrics'
+              ? <Metrics/>
+              : <Demo/>
+            ))}
       </div>
     );
   }
