@@ -39,7 +39,7 @@ app.get('/workorders', (req, res) => {
 app.get('/workers', (req, res) => {
     Worker.find({
     }, function (err, doc) {
-        res.status(200).send(doc)
+        res.json(doc)
     })
 });
 
@@ -133,9 +133,74 @@ app.post('/addFacilities', (req, res) => {
         .catch(err => res.json(err));
 });
 
+
 app.get('/getFacilities', (req, res) => {
     Facility.find({}).then(doc => res.json(doc)).catch(err => console.log(err));
 })
+
+const getRandomInt = (min, max) => {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+app.get('/deleteAllFacilities', (req, res) => {
+    Facility.remove({}).then(res.send('Successfully deleted all facilities.'));
+
+});
+app.get('/populateFacilities/:num', (req, res) => {
+    let generatedFacilities = [];
+    // console.log(params);
+    const { num } = req.params;
+    for (let i = 0; i < num; i++) {
+        generatedFacilities.push({
+            facilityId: `Facility ${i + 1}`,
+            location: {
+                type: 'Point',
+                coordinates: [getRandomInt(-74.0060, -122.3321), getRandomInt(29.3013, 47.6062)]
+            }
+        })
+    }
+    Facility.insertMany(generatedFacilities)
+        .then(doc => { res.send(`Successfully generated ${num} facilities.`); })
+        .catch(err => res.json(err));
+});
+
+
+app.get('/getWorkerMarkers', (req, ress) => {
+    Facility.find({})
+        .then(res => {
+            const allFacilityIds = res.map(facility => facility.facilityId);
+            // console.log(allFacilityIds, res);
+            Worker.find({})
+                .then(res2 => {
+                    let markers = [];
+                    // console.log(res2);
+                    for (let worker of res2) {
+
+                        if (worker.queue.length > 0) {
+                            const curFacility = worker.queue[0];
+                            // console.log(curFacility, allFacilityIds)
+                            if (allFacilityIds.includes(curFacility.facility)) {
+                                // console.log('hihihi')
+                                let coordinates = res[allFacilityIds.indexOf(curFacility.facility)].location.coordinates;
+                                //  offset so that the facility is still visible
+                                coordinates[0] += 0.05;
+                                coordinates[0] += 0.05;
+                                coordinates.reverse();
+                                markers.push({
+                                    name: worker.name,
+                                    traveling: worker.traveling,
+                                    coordinates,
+                                    curFacility: curFacility.facility
+                                });
+                            }
+                        }
+                    }
+                    ress.json(markers);
+                });
+        });
+
+});
 
 app.post('/getFacilitiesInBox', (req, res) => {
     const { bottomLeft, upperRight } = req.body;
