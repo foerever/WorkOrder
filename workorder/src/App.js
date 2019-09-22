@@ -36,7 +36,7 @@ class App extends React.Component {
           ? <OrderSubmission />
           : (this.state.route === 'technician'
             ? <TechnicianForm />
-            : (this.state.route == 'metrics'
+            : (this.state.route === 'metrics'
               ? <Metrics/>
               : <Demo/>
             ))}

@@ -127,9 +127,9 @@ class Metrics extends React.Component {
         var curr = new Date().getHours();
 
         for (var i = 0; i < 24; i++) {
-            curr = curr == 0 ? 24 : curr
+            curr = curr === 0 ? 24 : curr
             arr.unshift(curr)
-            curr = curr -1 == 0 ? 24 : curr - 1 
+            curr = curr -1 === 0 ? 24 : curr - 1 
         }
 
         var lineChartData = {
