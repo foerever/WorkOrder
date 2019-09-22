@@ -98,8 +98,16 @@ class Metrics extends React.Component {
             }]
         }
 
+        var arr = []
+        var curr = new Date().getHours();
+
+        for (var i = 0; i < 24; i++) {
+            arr.unshift(curr)
+            curr = curr -1 == 0 ? 24 : curr - 1 
+        }
+
         var lineChartData = {
-            labels: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24],
+            labels: arr,
             datasets: this.state.lineChartDataSets
         }
 
