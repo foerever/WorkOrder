@@ -177,8 +177,9 @@ app.get('/populateFacilities/:num', (req, res) => {
 app.get('/getWorkerMarkers', (req, ress) => {
     Facility.find({})
         .then(res => {
+
             const allFacilityIds = res.map(facility => facility.facilityId);
-            // console.log(allFacilityIds, res);
+            console.log('All Facility ids', allFacilityIds, res);
             Worker.find({})
                 .then(res2 => {
                     let markers = [];
@@ -187,7 +188,7 @@ app.get('/getWorkerMarkers', (req, ress) => {
 
                         if (worker.queue.length > 0) {
                             const curFacility = worker.queue[0];
-                            // console.log(curFacility, allFacilityIds)
+                            console.log('Cur Facility ', curFacility, allFacilityIds)
                             if (allFacilityIds.includes(curFacility.facility)) {
                                 // console.log('hihihi')
                                 let coordinates = res[allFacilityIds.indexOf(curFacility.facility)].location.coordinates;
@@ -195,6 +196,7 @@ app.get('/getWorkerMarkers', (req, ress) => {
                                 coordinates[0] += 0.05;
                                 coordinates[0] += 0.05;
                                 coordinates.reverse();
+                                console.log('Name: ', worker.name);
                                 markers.push({
                                     name: worker.name,
                                     traveling: worker.traveling,
