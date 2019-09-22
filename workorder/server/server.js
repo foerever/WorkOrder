@@ -100,7 +100,7 @@ app.post('/workorder_submission', async function (req, res, next) {
     var optimal_worker = await Worker.findOne({ phone_number: 19492957381 });
 
     console.log("optimal_worker: " + optimal_worker.name);
-    optimal_worker.queue.push(workOrder)
+    optimal_worker.queue.push(workOrder);
     optimal_worker.save()
 
     client.studio.flows('FW4ade4ea937ce0a7524299a937d7fc440').executions
@@ -125,7 +125,7 @@ app.post('/worker_submission', function (req, res, next) {
         certifications: req.body.certifications,
         shift: req.body.shift === 'AM' ? true : false,
         queue: [],
-        traveling: false,
+        state: 0,
         hoursLeft: 0
     });
     console.log(workerSignUp.shift);
@@ -244,6 +244,37 @@ app.post('/status', async function (req, res, next) {
     res.status(200).send({ traveling: tech_after.traveling, num_queue: tech_after.queue.length, destination: tech_after.queue[0] })
 });
 
+app.post('/addErica', async (req, res) => {
+    var workerSignUp = new Worker({
+        name: "Erica",
+        phone_number: 19492957381,
+        certifications: "Security",
+        shift: true,
+        queue: [],
+        traveling: false,
+        hoursLeft: 0
+    });
+    workerSignUp.save();
+})
+
+app.post('/clear', async (req, res) => {
+    console.log("Attempted to clear database!")
+    Worker.collection.drop();
+    WorkOrder.collection.drop();
+    Facility.collection.drop();
+})
+
+app.post('/clearDB', async (req, res) => {
+    console.log("Attempted to clear workers database!")
+    const { input } = req.body
+    if (input === 0)
+        Worker.collection.drop();
+    else if (input === 1)
+        WorkOrder.collection.drop();
+    else if (input === 2)
+        Facility.collection.drop();
+})
+
 // updates a technician's traveling status
 app.post('/update', async (req, res) => {
 
@@ -280,7 +311,6 @@ app.post('/update', async (req, res) => {
                 // decrement hours on this worker
                 worker.hoursLeft -= hrs;
                 worker.save();
-
                 // TODO: function to reassign work order
             }
             // hacky do nothing if not found..but it shouldn't be not found anyways ¯\_(ツ)_/¯ just in case

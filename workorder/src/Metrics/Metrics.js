@@ -1,7 +1,7 @@
 import React from 'react';
 import '../App.css';
 import axios from 'axios';
-import { Radar, Line, Bar } from 'react-chartjs-2';
+import {Line, Bar } from 'react-chartjs-2';
 
 class Metrics extends React.Component {
     constructor(props) {
@@ -127,8 +127,9 @@ class Metrics extends React.Component {
         var curr = new Date().getHours();
 
         for (var i = 0; i < 24; i++) {
+            curr = curr === 0 ? 24 : curr
             arr.unshift(curr)
-            curr = curr -1 == 0 ? 24 : curr - 1 
+            curr = curr -1 === 0 ? 24 : curr - 1 
         }
 
         var lineChartData = {
